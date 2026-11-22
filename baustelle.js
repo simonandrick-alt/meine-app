@@ -162,13 +162,15 @@
   const root = () => $('auf');
   async function list() {
     const all = (await getAll('aufmass')).sort((a, b) => (b.updated || 0) - (a.updated || 0));
-    root().innerHTML = `<div class="r-top"><h2 class="r-h">Aufmaß</h2><button class="add auf-new" data-a="new">+ Neu</button></div>` +
-      (all.length ? all.map(r => {
+    const COLS = {ok: '#34c759', warn: '#ff9500', bad: '#ff3b30', wait: '#8e8e93'};
+    root().innerHTML = `<div class="r-top"><span class="r-h">Aufmaß</span><button class="top-btn" data-a="new"><svg class="ic"><use href="#i-plus"/></svg>Neu</button></div>` +
+      (all.length ? `<div class="rows">` + all.map(r => {
         const a = analyze(r.m), st = a.ready ? a.status : 'wait';
-        return `<button class="auf-item" data-open="${esc(r.id)}"><span class="dot ${st}"></span><span class="t"><b>${esc(r.titel || 'Ohne Bezeichnung')}</b><small>${esc([r.ort, dt(r.datum), (r.fotos || []).length ? (r.fotos.length + ' Foto' + (r.fotos.length > 1 ? 's' : '')) : ''].filter(Boolean).join(' · '))}</small></span>` +
-          (a.ready ? `<span class="v">${nf(a.minB, 0)} × ${nf(a.minH, 0)}</span>` : '') + `</button>`;
-      }).join('') : `<div class="card"><p class="empty" style="margin:0">Noch kein Aufmaß. Tippe auf „+ Neu“, um eine Nische oder Öffnung aufzumessen.</p></div>`) +
-      `<p class="hint">Alle Aufmaße und Fotos bleiben nur auf diesem Gerät.</p>`;
+        return `<button class="rw" data-open="${esc(r.id)}"><span class="tl" style="background:${COLS[st]}"><svg class="ic"><use href="#i-ruler"/></svg></span>` +
+          `<span class="bd"><span class="tx"><b>${esc(r.titel || 'Ohne Bezeichnung')}</b><small>${esc([r.ort, dt(r.datum), (r.fotos || []).length ? (r.fotos.length + ' Foto' + (r.fotos.length > 1 ? 's' : '')) : ''].filter(Boolean).join(' · '))}</small></span>` +
+          (a.ready ? `<span class="v">${nf(a.minB, 0)} × ${nf(a.minH, 0)}</span>` : '') + `<svg class="ic chev"><use href="#i-chev"/></svg></span></button>`;
+      }).join('') + `</div>` : `<div class="card"><p class="empty" style="margin:0">Noch kein Aufmaß. Tippe auf „Neu“, um eine Nische oder Öffnung aufzumessen.</p></div>`) +
+      `<p class="hint" style="margin:-8px 16px 0">Grün = im Winkel · Orange = leicht schief · Rot = deutlich schief. Alles bleibt nur auf diesem Gerät.</p>`;
   }
   async function open(id) {
     cur = id ? await get('aufmass', id) : blank();
@@ -179,7 +181,7 @@
   }
   function renderEdit() {
     const r = cur;
-    root().innerHTML = `<div class="r-top"><button class="back" data-a="back">‹ Alle Aufmaße</button><button class="clear auf-share" data-a="share">Teilen</button></div>
+    root().innerHTML = `<div class="r-top"><button class="back" data-a="back"><svg class="ic"><use href="#i-back"/></svg>Aufmaß</button><button class="top-btn" data-a="share"><svg class="ic"><use href="#i-share"/></svg>Teilen</button></div>
       <div class="card">
         <div class="grid">
           <div class="full"><label for="a_titel">Bezeichnung</label><input id="a_titel" data-f="titel" type="text" placeholder="z. B. Nische Kühlschrank" value="${esc(r.titel)}"></div>
@@ -197,7 +199,7 @@
       <div class="card">
         <h2><svg class="ic"><use href="#i-camera"/></svg>Fotos</h2>
         <div class="auf-fotos" id="a_fotos"></div>
-        <label class="add auf-addfoto" for="a_file">+ Foto aufnehmen</label>
+        <label class="add" for="a_file"><svg class="ic"><use href="#i-camera"/></svg>Foto aufnehmen</label>
         <input type="file" id="a_file" accept="image/*" hidden>
         <p class="hint">Tippe auf ein Foto, um Maßlinien einzuzeichnen.</p>
       </div>

@@ -1,4 +1,4 @@
-const CACHE = 'meine-app-v11';
+const CACHE = 'meine-app-v12';
 const FILES = ['./', 'index.html', 'app.js', 'lock.js', 'rechner.js', 'baustelle.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'kueche.json', 'fonts/lato-300.woff2', 'fonts/lato-400.woff2', 'fonts/lato-700.woff2', 'fonts/lato-900.woff2'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));

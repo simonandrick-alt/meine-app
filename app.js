@@ -142,7 +142,7 @@ const ROM = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 function renderKue(){
   if (!K) return;
   if (KS.woche !== K.woche) { KS = {woche: K.woche, pick: [], done: []}; kstore(); }
-  $('kue_head').innerHTML = `<h2><svg class="ic"><use href="#i-cloche"/></svg>Küche der Woche</h2><b>${esc(K.woche)}</b>${K.ort ? ' · ' + esc(K.ort) : ''}<p class="hint">${esc(K.hinweis || '')}</p><p class="hint">Stand: ${dt(K.stand)}</p><button class="refresh" data-refresh="1">Aktualisieren</button>`;
+  $('kue_head').innerHTML = `<h2><svg class="ic"><use href="#i-cloche"/></svg>Küche der Woche</h2><b>${esc(K.woche)}</b>${K.ort ? ' · ' + esc(K.ort) : ''}<p class="hint">${esc(K.hinweis || '')}</p><p class="hint">Stand: ${dt(K.stand)}</p><button class="refresh" data-refresh="1"><svg class="ic"><use href="#i-refresh"/></svg>Aktualisieren</button>`;
   $('kue_rez').innerHTML = K.rezepte.map((r, i) => `<details class="rez"><summary><span class="e">${ROM[i] || i + 1}</span><span><b>${esc(r.titel)}</b><small>${r.portionen} Portionen · ${esc(r.zeit)} · ca. ${eur(r.kosten)}</small></span></summary><div class="in">
     <ul class="list">${r.zutaten.map(z => `<li><div class="t">${esc(z.name)}${z.angebot ? `<span class="tag">${esc(z.markt)}</span>` : ''}<small>${esc(z.menge)}</small></div></li>`).join('')}</ul>
     <ol>${r.schritte.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
@@ -196,34 +196,33 @@ addEventListener('touchend', () => {
   y0 = null; pull = 0;
 });
 
-// ===== Navigation =====
-const SUB = {work: 'Werkstatt', site: 'Baustelle', free: 'Freizeit'};
-const last = {work: 'rech', site: 'auf', free: 'kue'};
-let area = 'work';
+// ===== Navigation: Tab-Leiste unten, Segmente in Freizeit =====
+const TITLES = {work: 'Werkstatt', site: 'Baustelle', kue: 'Küche', free: 'Freizeit', set: 'Einstellungen'};
+const TAB_SEC = {work: 'rech', site: 'auf', kue: 'kue', set: 'set'};
+let tab = 'work', freeSub = 'rad';
 function greet(){ const h = new Date().getHours(); $('greet').textContent = h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 17 ? 'Guten Tag' : h < 22 ? 'Guten Abend' : 'Gute Nacht'; }
-function go(id){
-  if (!$(id) || !$(id).classList.contains(area)) id = {work: 'rech', site: 'auf', free: 'kue'}[area];
-  document.querySelectorAll('main > section').forEach(s => s.classList.toggle('on', s.id === id));
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.go === id));
-  last[area] = id;
-  try { localStorage.setItem(KEY + '-nav', JSON.stringify({area, last})); } catch (e) {}
-  window.scrollTo(0, 0);
+function show(){
+  const sec = tab === 'free' ? freeSub : TAB_SEC[tab];
+  document.querySelectorAll('main > section').forEach(s => s.classList.toggle('on', s.id === sec));
+  $('free-seg').style.display = tab === 'free' ? '' : 'none';
+  document.querySelectorAll('#free-seg button').forEach(b => b.classList.toggle('on', b.dataset.free === freeSub));
+  document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('title').textContent = TITLES[tab];
+  try { localStorage.setItem(KEY + '-nav', JSON.stringify({tab, freeSub})); } catch (e) {}
 }
-function setArea(a){
-  area = a;
-  document.querySelectorAll('.switch button').forEach(b => b.classList.toggle('on', b.dataset.area === a));
-  $('nav-free').classList.toggle('on', a === 'free');
-  document.body.classList.toggle('nonav', a !== 'free');
-  $('subtitle').textContent = SUB[a];
-  go(last[a]);
-}
-document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
-document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => setArea(b.dataset.area)));
-try { const n = JSON.parse(localStorage.getItem(KEY + '-nav') || 'null'); if (n) { if (n.last && n.last.free) last.free = n.last.free; area = ['work', 'site', 'free'].includes(n.area) ? n.area : 'work'; } } catch (e) {}
+function setTab(t, top = true){ if (!TITLES[t]) t = 'work'; tab = t; show(); if (top) window.scrollTo(0, 0); }
+document.querySelectorAll('#tabbar button').forEach(b => b.addEventListener('click', () => {
+  // Nochmal auf den aktiven Tab tippen: zurück nach oben (wie bei iOS)
+  if (b.dataset.tab === tab) { window.scrollTo({top: 0, behavior: 'smooth'}); return; }
+  setTab(b.dataset.tab);
+}));
+document.querySelectorAll('#free-seg button').forEach(b => b.addEventListener('click', () => { freeSub = b.dataset.free; show(); window.scrollTo(0, 0); }));
+try { const n = JSON.parse(localStorage.getItem(KEY + '-nav') || 'null');
+  if (n) { if (TITLES[n.tab]) tab = n.tab; if (['rad', 'sch', 'spi', 'fre'].includes(n.freeSub)) freeSub = n.freeSub; } } catch (e) {}
 greet(); setInterval(greet, 600000);
 
 renderAll();
-setArea(area);
+setTab(tab);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 // Klicks zentral verteilen (keine eingebetteten Befehle, damit die Sicherheitsregeln streng sein können)

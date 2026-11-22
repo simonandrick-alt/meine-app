@@ -455,6 +455,8 @@
   }
 
   // ---- Anzeige ----
+  // Farben der Icon-Kacheln (iOS-Systemfarben)
+  const COL = {vol: '#a2845e', fla: '#ff9500', lfm: '#ffcc00', pla: '#34c759', dre: '#007aff', win: '#5856d6', geh: '#af52de', ver: '#30b0c7', tre: '#9c1006', obf: '#ff2d55', ang: '#8e8e93'};
   const root = () => document.getElementById('rech');
   const unitSeg = () => `<div class="seg" role="group" aria-label="Einheit">${Object.keys(UNITS).map(u => `<button data-unit="${u}" class="${u === S.unit ? 'on' : ''}">${u}</button>`).join('')}</div>`;
   function render() {
@@ -462,14 +464,15 @@
     if (!S.open || !C[S.open]) {
       const groups = {};
       Object.values(C).forEach(c => (groups[c.g] ||= []).push(c));
-      el.innerHTML = `<div class="r-top"><h2 class="r-h">Werkstatt-Rechner</h2>${unitSeg()}</div>` +
-        Object.entries(groups).map(([gname, cs]) => `<h3 class="r-g">${esc(gname)}</h3><div class="tiles">${cs.map(c =>
-          `<button class="tile" data-open="${c.id}"><svg class="ic"><use href="#${c.icon}"/></svg><b>${esc(c.t)}</b><small>${esc(c.d)}</small></button>`).join('')}</div>`).join('') +
-        `<p class="hint">Tipp: In jedes Zahlenfeld kannst du rechnen, z. B. <b>2440-2×10</b> oder <b>3×600+20</b>.</p>`;
+      el.innerHTML = `<div class="r-top"><span class="r-h">Einheit</span>${unitSeg()}</div>` +
+        Object.entries(groups).map(([gname, cs]) => `<h3 class="r-g">${esc(gname)}</h3><div class="rows">${cs.map(c =>
+          `<button class="rw" data-open="${c.id}"><span class="tl" style="background:${COL[c.id] || '#8e8e93'}"><svg class="ic"><use href="#${c.icon}"/></svg></span>` +
+          `<span class="bd"><span class="tx"><b>${esc(c.t)}</b><small>${esc(c.d)}</small></span><svg class="ic chev"><use href="#i-chev"/></svg></span></button>`).join('')}</div>`).join('') +
+        `<p class="hint" style="margin:-8px 16px 0">In jedes Zahlenfeld kannst du rechnen, z. B. <b>2440-2×10</b> oder <b>3×600+20</b>.</p>`;
       return;
     }
     const c = C[S.open]; initVals(c.id); const v = vals(c.id);
-    el.innerHTML = `<div class="r-top"><button class="back" data-back="1">‹ Alle Rechner</button>${unitSeg()}</div>
+    el.innerHTML = `<div class="r-top"><button class="back" data-back="1"><svg class="ic"><use href="#i-back"/></svg>Rechner</button>${unitSeg()}</div>
       <div class="card"><h2><svg class="ic"><use href="#${c.icon}"/></svg>${esc(c.t)}</h2>
       <div class="fig-box"><div id="r_fig"></div><div class="fig-res" id="r_head"></div></div>
       ${c.intro ? `<p class="hint">${c.intro}</p>` : ''}
@@ -479,7 +482,7 @@
         return `<div class="fld ${fd.full ? 'full' : ''}"><label for="${idf}">${lab}</label><input id="${idf}" data-k="${fd.k}" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="${esc(v[fd.k])}" placeholder="${esc(fd.ph || '')}"><small class="pv" data-pv="${fd.k}"></small></div>`;
       }).join('')}</div>
       <div id="r_out"></div>
-      <div class="r-act"><button class="clear" data-reset="1">Zurücksetzen</button><button class="clear r-share" data-share="1">Teilen</button></div></div>`;
+      <div class="r-act"><button class="clear" data-reset="1">Zurücksetzen</button><button class="clear r-share" data-share="1"><svg class="ic"><use href="#i-share"/></svg>Teilen</button></div></div>`;
     update();
   }
   let lastResult = null;
