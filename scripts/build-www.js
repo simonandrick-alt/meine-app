@@ -5,4 +5,5 @@ const FILES = ['index.html', 'app.js', 'lock.js', 'rechner.js', 'manifest.json',
 fs.rmSync(out, {recursive: true, force: true});
 fs.mkdirSync(out);
 for (const f of FILES) fs.copyFileSync(path.join(root, f), path.join(out, f));
+fs.cpSync(path.join(root, 'fonts'), path.join(out, 'fonts'), {recursive: true});
 console.log('www/ erstellt mit', FILES.length, 'Dateien');
