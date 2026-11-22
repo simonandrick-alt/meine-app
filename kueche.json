@@ -1,0 +1,326 @@
+{
+  "woche": "KW 48 · 23.–28.11.2026",
+  "stand": "2026-11-22",
+  "hinweis": "Preise aus Prospekt-Vorschauen im Internet. Einzelne Märkte können abweichen, bitte vor Ort prüfen.",
+  "angebote": [
+    {
+      "markt": "Aldi",
+      "produkt": "Hackfleisch gemischt XXL",
+      "menge": "800 g",
+      "preis": 5.19,
+      "info": "6,49 €/kg"
+    },
+    {
+      "markt": "Aldi",
+      "produkt": "Hähnchen-Ministeaks XXL",
+      "menge": "800 g",
+      "preis": 6.99,
+      "info": "8,74 €/kg"
+    },
+    {
+      "markt": "Lidl",
+      "produkt": "Schweine-Hackfleisch (Metzgerfrisch)",
+      "menge": "Packung",
+      "preis": 3.59,
+      "info": "Datum der Quelle unsicher"
+    },
+    {
+      "markt": "REWE",
+      "produkt": "Rinder-Rouladen",
+      "menge": "100 g",
+      "preis": 1.79,
+      "info": "je nach Quelle 1,79–1,99 €/100 g"
+    },
+    {
+      "markt": "REWE",
+      "produkt": "Fleischwurst im Ring",
+      "menge": "1 kg",
+      "preis": 3.99
+    },
+    {
+      "markt": "REWE",
+      "produkt": "Schlagsahne",
+      "menge": "200 g",
+      "preis": 0.79
+    },
+    {
+      "markt": "REWE",
+      "produkt": "Rote Tafeläpfel",
+      "menge": "1 kg",
+      "preis": 1.69
+    },
+    {
+      "markt": "REWE",
+      "produkt": "Clementinen",
+      "menge": "1 kg",
+      "preis": 1.89
+    },
+    {
+      "markt": "REWE",
+      "produkt": "Grapefruit (Spanien)",
+      "menge": "Stück",
+      "preis": 0.55
+    },
+    {
+      "markt": "Edeka",
+      "produkt": "Paprika",
+      "menge": "",
+      "preis": null,
+      "info": "im Angebot, Preis bitte im Markt prüfen"
+    }
+  ],
+  "rezepte": [
+    {
+      "titel": "Chili con Carne",
+      "emoji": "🌶️",
+      "portionen": 3,
+      "zeit": "40 min",
+      "kosten": 5.5,
+      "rest": "Hält 3 Tage im Kühlschrank, lässt sich gut einfrieren. Schmeckt am zweiten Tag noch besser.",
+      "zutaten": [
+        {
+          "name": "Hackfleisch gemischt",
+          "menge": "400 g (halbe XXL-Packung)",
+          "markt": "Aldi",
+          "angebot": true
+        },
+        {
+          "name": "Paprika",
+          "menge": "1 Stück",
+          "markt": "Edeka",
+          "angebot": true
+        },
+        {
+          "name": "Zwiebel",
+          "menge": "1"
+        },
+        {
+          "name": "Knoblauch",
+          "menge": "1 Zehe"
+        },
+        {
+          "name": "Kidneybohnen",
+          "menge": "1 Dose"
+        },
+        {
+          "name": "Mais",
+          "menge": "1 kleine Dose"
+        },
+        {
+          "name": "Gehackte Tomaten",
+          "menge": "1 Dose (400 g)"
+        },
+        {
+          "name": "Tomatenmark, Chili, Paprikapulver, Kreuzkümmel",
+          "menge": "nach Geschmack"
+        },
+        {
+          "name": "Reis oder Brot",
+          "menge": "dazu"
+        }
+      ],
+      "schritte": [
+        "Zwiebel und Knoblauch fein hacken, Paprika würfeln.",
+        "Hackfleisch in einem Topf krümelig scharf anbraten, Zwiebel und Knoblauch dazugeben.",
+        "1 EL Tomatenmark kurz mitrösten, dann gehackte Tomaten, Paprika und Gewürze dazu.",
+        "Bohnen und Mais abspülen, dazugeben und 25 Minuten leise köcheln lassen.",
+        "Mit Salz, Pfeffer und Chili abschmecken. Mit Reis oder Brot servieren."
+      ]
+    },
+    {
+      "titel": "Hähnchen in Paprika-Sahne mit Nudeln",
+      "emoji": "🍗",
+      "portionen": 2,
+      "zeit": "25 min",
+      "kosten": 4.2,
+      "rest": "Zweite Portion am nächsten Tag kurz in der Pfanne mit einem Schluck Wasser aufwärmen.",
+      "zutaten": [
+        {
+          "name": "Hähnchen-Ministeaks",
+          "menge": "400 g (halbe XXL-Packung)",
+          "markt": "Aldi",
+          "angebot": true
+        },
+        {
+          "name": "Schlagsahne",
+          "menge": "200 g",
+          "markt": "REWE",
+          "angebot": true
+        },
+        {
+          "name": "Paprika",
+          "menge": "1 Stück",
+          "markt": "Edeka",
+          "angebot": true
+        },
+        {
+          "name": "Zwiebel",
+          "menge": "1"
+        },
+        {
+          "name": "Nudeln (Penne/Bandnudeln)",
+          "menge": "250 g"
+        },
+        {
+          "name": "Paprikapulver edelsüß, Brühe",
+          "menge": "nach Geschmack"
+        }
+      ],
+      "schritte": [
+        "Nudeln nach Packung kochen.",
+        "Ministeaks in Streifen schneiden, salzen, pfeffern und in Öl rundum anbraten, herausnehmen.",
+        "Zwiebel und Paprika in Streifen in derselben Pfanne 4 Minuten braten.",
+        "1 TL Paprikapulver darüberstreuen, mit Sahne und einem Schuss Brühe ablöschen, 3 Minuten einkochen.",
+        "Hähnchen zurück in die Soße, mit den Nudeln mischen."
+      ]
+    },
+    {
+      "titel": "Spaghetti Bolognese (Vorrat)",
+      "emoji": "🍝",
+      "portionen": 3,
+      "zeit": "45 min",
+      "kosten": 4.8,
+      "rest": "Soße portionsweise einfrieren, dann hast du schnelle Abendessen für später.",
+      "zutaten": [
+        {
+          "name": "Hackfleisch gemischt",
+          "menge": "400 g (zweite Hälfte XXL-Packung)",
+          "markt": "Aldi",
+          "angebot": true
+        },
+        {
+          "name": "Zwiebel",
+          "menge": "1"
+        },
+        {
+          "name": "Möhre",
+          "menge": "1"
+        },
+        {
+          "name": "Passierte Tomaten",
+          "menge": "500 g"
+        },
+        {
+          "name": "Tomatenmark",
+          "menge": "1 EL"
+        },
+        {
+          "name": "Spaghetti",
+          "menge": "100 g pro Portion"
+        },
+        {
+          "name": "Oregano, Basilikum, Parmesan",
+          "menge": "nach Geschmack"
+        }
+      ],
+      "schritte": [
+        "Zwiebel und Möhre sehr fein würfeln.",
+        "Hackfleisch kräftig anbraten, Gemüse dazugeben und 5 Minuten mitbraten.",
+        "Tomatenmark kurz mitrösten, passierte Tomaten und Kräuter dazugeben.",
+        "Mindestens 30 Minuten leise köcheln lassen, mit Salz, Pfeffer und einer Prise Zucker abschmecken.",
+        "Spaghetti kochen, mit Soße und Parmesan servieren."
+      ]
+    },
+    {
+      "titel": "Fleischwurst-Pfanne mit Bratkartoffeln",
+      "emoji": "🥔",
+      "portionen": 2,
+      "zeit": "30 min",
+      "kosten": 3.2,
+      "rest": "Den Rest der Fleischwurst als Brotbelag oder für eine zweite Pfanne nutzen.",
+      "zutaten": [
+        {
+          "name": "Fleischwurst",
+          "menge": "ca. 300 g",
+          "markt": "REWE",
+          "angebot": true
+        },
+        {
+          "name": "Kartoffeln (festkochend)",
+          "menge": "600 g"
+        },
+        {
+          "name": "Zwiebel",
+          "menge": "1"
+        },
+        {
+          "name": "Paprika",
+          "menge": "1 Stück",
+          "markt": "Edeka",
+          "angebot": true
+        },
+        {
+          "name": "Ei",
+          "menge": "1–2, optional"
+        },
+        {
+          "name": "Senf, Gewürzgurken",
+          "menge": "dazu"
+        }
+      ],
+      "schritte": [
+        "Kartoffeln mit Schale 15 Minuten vorkochen, abkühlen lassen und in Scheiben schneiden (oder Pellkartoffeln vom Vortag nehmen).",
+        "Kartoffelscheiben in reichlich Öl goldbraun braten.",
+        "Fleischwurst in Würfel, Zwiebel und Paprika in Streifen schneiden, dazugeben und mitbraten.",
+        "Optional zum Schluss ein Ei darüber schlagen und stocken lassen.",
+        "Mit Salz, Pfeffer und Paprika würzen. Senf und Gurken dazu."
+      ]
+    },
+    {
+      "titel": "Rinderrouladen mit Rotkohl (Sonntagsessen)",
+      "emoji": "🥩",
+      "portionen": 2,
+      "zeit": "2 Std. (meist Schmoren)",
+      "kosten": 9.5,
+      "rest": "Die zweite Roulade mit Soße hält 2–3 Tage und lässt sich einfrieren.",
+      "zutaten": [
+        {
+          "name": "Rinder-Rouladen",
+          "menge": "2 Stück (ca. 350 g)",
+          "markt": "REWE",
+          "angebot": true
+        },
+        {
+          "name": "Fetter Speck (Scheiben)",
+          "menge": "2 Scheiben"
+        },
+        {
+          "name": "Gewürzgurke",
+          "menge": "1"
+        },
+        {
+          "name": "Zwiebel",
+          "menge": "2"
+        },
+        {
+          "name": "Senf (mittelscharf)",
+          "menge": "2 TL"
+        },
+        {
+          "name": "Rotwein oder Brühe",
+          "menge": "400 ml"
+        },
+        {
+          "name": "Rotkohl (Glas)",
+          "menge": "1 Glas"
+        },
+        {
+          "name": "Kartoffeln oder Klöße",
+          "menge": "dazu"
+        }
+      ],
+      "schritte": [
+        "Rouladen flach auslegen, salzen, pfeffern und mit Senf bestreichen.",
+        "Mit Speck, Zwiebelstreifen und Gurkenstreifen belegen, aufrollen und mit Rouladennadeln feststecken.",
+        "Rundum scharf anbraten, restliche Zwiebel dazugeben und anrösten.",
+        "Mit Rotwein oder Brühe ablöschen, zugedeckt etwa 90 Minuten leise schmoren.",
+        "Soße abbinden und abschmecken. Mit Rotkohl und Kartoffeln oder Klößen servieren."
+      ]
+    }
+  ],
+  "quellen": [
+    "https://www.kaufda.de/insights/aldi-sued-prospekt-23-11-2026-gourmet-genuss-und-xxl-deals/",
+    "https://www.kaufda.de/insights/rewe-prospekt-23-11-2026-alles-fuer-eure-vierbeiner/",
+    "https://www.prospektangebote.de/geschaefte/lidl/prospekte-angebote"
+  ]
+}
