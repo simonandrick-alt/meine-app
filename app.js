@@ -108,7 +108,7 @@ $('bk_exp').onclick = async () => {
   const btn = $('bk_exp'); btn.disabled = true; const old = btn.textContent; btn.textContent = 'Sicherung wird erstellt …';
   try {
     const bs = window.Baustelle ? await window.Baustelle.exportData() : {aufmass: [], fotos: []};
-    const data = {app: 'meine-app', v: 2, erstellt: new Date().toISOString(), daten: D, werte: JSON.parse(localStorage.getItem(KEY) || '{}'), aufmass: bs.aufmass, fotos: bs.fotos};
+    const data = {app: 'meine-app', v: 2, erstellt: new Date().toISOString(), daten: D, werte: JSON.parse(localStorage.getItem(KEY) || '{}'), aufmass: bs.aufmass, abnahme: bs.abnahme || [], fotos: bs.fotos};
     const file = new File([JSON.stringify(data)], 'meine-app-sicherung-' + today() + '.json', {type: 'application/json'});
     const r = await window.ShareFiles({title: 'Sicherung Meine App', text: 'Sicherung vom ' + dt(today()), files: [file]});
     toast(r === 'downloaded' ? 'Sicherung gespeichert' : 'Sicherung bereit');
@@ -122,11 +122,11 @@ $('bk_file').onchange = async ev => {
     if (file.size > 300e6) throw 0;
     const j = JSON.parse(await file.text());
     if (!j || j.app !== 'meine-app' || !j.daten) throw 0;
-    const na = Array.isArray(j.aufmass) ? j.aufmass.length : 0;
-    if (!confirm('Sicherung laden?\n\nFreizeit-Einträge werden ersetzt.' + (na ? '\n' + na + ' Aufmaß(e) werden hinzugefügt bzw. aktualisiert.' : ''))) { ev.target.value = ''; return; }
+    const na = (Array.isArray(j.aufmass) ? j.aufmass.length : 0) + (Array.isArray(j.abnahme) ? j.abnahme.length : 0);
+    if (!confirm('Sicherung laden?\n\nFreizeit-Einträge werden ersetzt.' + (na ? '\n' + na + ' Aufmaß(e)/Abnahme(n) werden hinzugefügt bzw. aktualisiert.' : ''))) { ev.target.value = ''; return; }
     D = clean(j.daten); store(); renderAll();
     let msg = 'Sicherung wiederhergestellt.';
-    if (na && window.Baustelle) { const r = await window.Baustelle.importData(j); msg += '\n' + r.aufmass + ' Aufmaß(e) und ' + r.fotos + ' Foto(s) übernommen.'; }
+    if (na && window.Baustelle) { const r = await window.Baustelle.importData(j); msg += '\n' + r.aufmass + ' Aufmaß(e), ' + r.abnahme + ' Abnahme(n) und ' + r.fotos + ' Foto(s) übernommen.'; }
     alert(msg);
   } catch (e) { alert('Diese Datei ist keine gültige Sicherung.'); }
   ev.target.value = '';
@@ -221,7 +221,7 @@ document.querySelectorAll('#tabbar button').forEach(b => b.addEventListener('cli
 document.querySelectorAll('#free-seg button').forEach(b => b.addEventListener('click', () => { freeSub = b.dataset.free; show(); window.scrollTo(0, 0); }));
 document.querySelectorAll('#site-seg button').forEach(b => b.addEventListener('click', () => { siteSub = b.dataset.site; show(); window.scrollTo(0, 0); }));
 try { const n = JSON.parse(localStorage.getItem(KEY + '-nav') || 'null');
-  if (n) { if (TITLES[n.tab]) tab = n.tab; if (['rad', 'sch', 'spi', 'fre'].includes(n.freeSub)) freeSub = n.freeSub; if (['auf', 'tools'].includes(n.siteSub)) siteSub = n.siteSub; } } catch (e) {}
+  if (n) { if (TITLES[n.tab]) tab = n.tab; if (['rad', 'sch', 'spi', 'fre'].includes(n.freeSub)) freeSub = n.freeSub; if (['auf', 'abn', 'tools'].includes(n.siteSub)) siteSub = n.siteSub; } } catch (e) {}
 greet(); setInterval(greet, 600000);
 
 renderAll();

@@ -32,8 +32,8 @@
   let dbp = null;
   function db() {
     if (!dbp) dbp = new Promise((res, rej) => {
-      const r = indexedDB.open('meine-app-baustelle', 1);
-      r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('aufmass', {keyPath: 'id'}); d.createObjectStore('fotos', {keyPath: 'id'}); };
+      const r = indexedDB.open('meine-app-baustelle', 2);
+      r.onupgradeneeded = () => { const d = r.result; ['aufmass', 'fotos', 'abnahme'].forEach(s => { if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, {keyPath: 'id'}); }); };
       r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
     });
     return dbp;
@@ -427,9 +427,9 @@
   });
   // ---------- Sicherung ----------
   async function exportData() {
-    const aufmass = await getAll('aufmass'), fotos = [];
+    const aufmass = await getAll('aufmass'), abnahme = await getAll('abnahme'), fotos = [];
     for (const f of await getAll('fotos')) fotos.push({id: f.id, type: f.blob.type || 'image/jpeg', b64: await blobToB64(f.blob)});
-    return {aufmass, fotos};
+    return {aufmass, abnahme, fotos};
   }
   // Prüft jede Angabe, damit eine präparierte Datei nichts anrichten kann
   const sid = x => typeof x === 'string' && /^[a-z0-9]{1,24}$/i.test(x) ? x : null;
@@ -452,16 +452,20 @@
   async function importData(j) {
     let n = 0, nf = 0;
     const recs = (Array.isArray(j.aufmass) ? j.aufmass : []).slice(0, 2000).map(cleanRec).filter(Boolean);
-    const need = new Set(recs.flatMap(r => r.fotos.map(f => f.id)));
+    const abn = (Array.isArray(j.abnahme) ? j.abnahme : []).slice(0, 2000).map(x => window.Abnahme ? window.Abnahme.clean(x) : null).filter(Boolean);
+    const need = new Set([...recs.flatMap(r => r.fotos.map(f => f.id)), ...abn.flatMap(x => x.maengel.map(m => m.foto).filter(Boolean))]);
     for (const f of (Array.isArray(j.fotos) ? j.fotos : [])) {
       if (!f || !sid(f.id) || !need.has(f.id) || typeof f.b64 !== 'string' || !/^image\/(jpeg|png)$/.test(f.type)) continue;
       try { const bin = atob(f.b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
         await put('fotos', {id: f.id, blob: new Blob([u], {type: f.type})}); nf++; } catch (e) {}
     }
     for (const r of recs) { await put('aufmass', r); n++; }
+    for (const x of abn) await put('abnahme', x);
+    if (window.Abnahme) window.Abnahme.refresh();
     if (root()) { cur = null; await list(); }
-    return {aufmass: n, fotos: nf};
+    return {aufmass: n, abnahme: abn.length, fotos: nf};
   }
 
+  window.BSDB = {getAll, get, put, del, shrink, fotoURL, uid, today, dt, esc, nf, toast, blobToB64};
   window.Baustelle = {analyze, sketch, exportData, importData, pdfReport: () => pdfReport()};
 })();

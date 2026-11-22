@@ -299,6 +299,30 @@ details.sp[open] .chev{transform:rotate(90deg)}
 .tbl th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:6px 8px;border-bottom:.5px solid var(--line2)}
 .tbl td{padding:8px;border-bottom:.5px solid var(--line);vertical-align:top;font-variant-numeric:tabular-nums}
 .spick{margin:6px 0 0;padding-left:20px;font-size:15px;color:var(--ink2)}.spick li{margin-bottom:8px}
+
+/* ===== Abnahme ===== */
+.chk{padding:4px 16px}
+.chk-r{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--line);font-size:15px}
+.chk-r:last-child{border-bottom:0}.chk-r span{flex:1}
+.ios-seg.mini{margin:0;flex:none}.ios-seg.mini button{min-width:52px;min-height:30px;font-size:13px}
+.ios-seg.mini button.on.ja{background:#34c759;color:#fff}.ios-seg.mini button.on.nein{background:var(--bad);color:#fff}
+.mg .mg-n{width:24px;height:24px;border-radius:50%;background:var(--brass);color:#fff;font:700 13px/24px var(--sans);text-align:center;flex:none;align-self:flex-start;margin-top:2px}
+.mg .t img{display:block;width:120px;height:90px;object-fit:cover;border-radius:8px;margin-top:6px}
+.mg-add{display:flex;gap:8px;align-items:center;margin-top:10px}
+.mg-add input{flex:1}.mg-add .top-btn{width:46px;height:46px;padding:0;border-radius:10px;flex:none;cursor:pointer}
+.mg-prev{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:13px;color:var(--muted)}.mg-prev img{width:56px;height:42px;object-fit:cover;border-radius:6px}
+.erg{padding:6px}
+.erg-b{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;text-align:left;padding:13px 12px;border-radius:10px;font:500 16px/1.2 var(--sans);color:var(--ink)}
+.erg-b.on{background:color-mix(in srgb,var(--c) 16%,transparent);font-weight:700}
+.erg-b .dot{width:14px;height:14px}
+.sigs .sig+.sig{margin-top:16px}
+.sig-box{display:flex;align-items:center;justify-content:center;width:100%;height:110px;margin-top:8px;border:1.5px dashed var(--line2);border-radius:10px;background:#fff;color:#8e8e93;font:500 15px/1 var(--sans);overflow:hidden;padding:0}
+.sig-box img{max-width:100%;max-height:100%}
+#sigpad{position:fixed;inset:0;z-index:95;background:#000;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.sp-wrap{position:relative;flex:1;margin:8px 12px calc(12px + env(safe-area-inset-bottom));background:#fff;border-radius:14px;overflow:hidden;touch-action:none}
+.sp-wrap canvas{position:absolute;inset:0;touch-action:none}
+.sp-line{position:absolute;left:8%;right:8%;bottom:28%;border-bottom:1.5px solid #c7c7cc;pointer-events:none}
+.sp-hint{position:absolute;left:0;right:0;bottom:calc(28% - 26px);text-align:center;color:#aeaeb2;font-size:13px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -342,6 +366,7 @@ details.sp[open] .chev{transform:rotate(90deg)}
   <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6 6.4 6 10.5a6 6 0 0 1-12 0c0-4.1 6-10.5 6-10.5z"/></symbol>
   <symbol id="i-level" viewBox="0 0 24 24"><rect x="2.5" y="8.5" width="19" height="7" rx="1.5"/><rect x="9" y="10.3" width="6" height="3.4" rx="1.7"/><path d="M12 10.3v3.4"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5c2.5-1.3 5.5-1.3 8 0 2.5-1.3 5.5-1.3 8 0v13c-2.5-1.3-5.5-1.3-8 0-2.5-1.3-5.5-1.3-8 0z"/><path d="M12 5.5v13"/></symbol>
+  <symbol id="i-sign" viewBox="0 0 24 24"><path d="M3 17.5c2.5-6 4.5-9 6-9 2 0-1.5 8 .5 8 1.5 0 2.5-4 4-4 1.2 0 .8 2.5 2 2.5 1 0 1.8-1 2.5-1.5"/><path d="M3 21h18"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
 </svg>
 <div class="sbar"></div>
@@ -357,9 +382,10 @@ details.sp[open] .chev{transform:rotate(90deg)}
 
 <!-- ============ BAUSTELLE ============ -->
 <div class="ios-seg tab-site" id="site-seg" role="tablist">
-  <button data-site="auf">Aufmaß</button><button data-site="tools">Werkzeuge</button>
+  <button data-site="auf">Aufmaß</button><button data-site="abn">Abnahme</button><button data-site="tools">Werkzeuge</button>
 </div>
 <section id="auf" class="tab-site"></section>
+<section id="abn" class="tab-site"></section>
 <section id="tools" class="tab-site">
 <div class="card">
   <h2><svg class="ic"><use href="#i-level"/></svg>Wasserwaage</h2>
@@ -455,7 +481,7 @@ details.sp[open] .chev{transform:rotate(90deg)}
 <div class="card" id="sec_card"></div>
 <div class="card">
   <h2><svg class="ic"><use href="#i-archive"/></svg>Sicherung</h2>
-  <p class="hint" style="margin-top:0">Deine Einträge liegen nur auf diesem Gerät. Die Sicherung enthält Freizeit-Einträge, Rechner-Werte und alle <b>Aufmaße mit Fotos</b>. Speichere sie z. B. über „In Dateien sichern“ in iCloud Drive.</p>
+  <p class="hint" style="margin-top:0">Deine Einträge liegen nur auf diesem Gerät. Die Sicherung enthält Freizeit-Einträge, Rechner-Werte, alle <b>Aufmaße und Abnahmen mit Fotos und Unterschriften</b>. Speichere sie z. B. über „In Dateien sichern“ in iCloud Drive.</p>
   <button class="add" id="bk_exp"><svg class="ic"><use href="#i-share"/></svg>Sicherung erstellen</button>
   <button class="clear" id="bk_imp">Sicherung wiederherstellen</button>
   <input type="file" id="bk_file" accept="application/json,.json" hidden>
@@ -478,6 +504,7 @@ details.sp[open] .chev{transform:rotate(90deg)}
 <script src="rechner.js"></script>
 <script src="pdf.js"></script>
 <script src="baustelle.js"></script>
+<script src="abnahme.js"></script>
 <script src="werkzeuge.js"></script>
 <script src="app.js"></script>
 </body>
