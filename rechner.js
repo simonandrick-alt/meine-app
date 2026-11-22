@@ -482,6 +482,8 @@
     const el = root(); if (!el) return;
     if (!S.open || !C[S.open]) {
       const groups = {};
+      const rec = (S.recent || []).filter(id => C[id]).slice(0, 3);
+      if (rec.length) groups['Zuletzt benutzt'] = rec.map(id => C[id]);
       Object.values(C).forEach(c => (groups[c.g] ||= []).push(c));
       el.innerHTML = `<div class="r-top"><span class="r-h">Einheit</span>${unitSeg()}</div>` +
         Object.entries(groups).map(([gname, cs]) => `<h3 class="r-g">${esc(gname)}</h3><div class="rows">${cs.map(c =>
@@ -559,7 +561,7 @@
     render();
     el.addEventListener('click', e => {
       const t = e.target.closest('[data-open],[data-back],[data-unit],[data-reset],[data-share]'); if (!t) return;
-      if (t.dataset.open) { S.open = t.dataset.open; save(); render(); scrollTo(0, 0); }
+      if (t.dataset.open) { S.open = t.dataset.open; S.recent = [S.open, ...(S.recent || []).filter(x => x !== S.open)].slice(0, 3); save(); render(); scrollTo(0, 0); }
       else if (t.dataset.back) { S.open = ''; save(); render(); scrollTo(0, 0); }
       else if (t.dataset.unit) setUnit(t.dataset.unit);
       else if (t.dataset.reset) { S.v[S.open] = {}; save(); render(); }

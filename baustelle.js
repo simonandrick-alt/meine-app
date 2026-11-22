@@ -181,7 +181,7 @@
   }
   function renderEdit() {
     const r = cur;
-    root().innerHTML = `<div class="r-top"><button class="back" data-a="back"><svg class="ic"><use href="#i-back"/></svg>Aufmaß</button><button class="top-btn" data-a="share"><svg class="ic"><use href="#i-share"/></svg>Teilen</button></div>
+    root().innerHTML = `<div class="r-top"><button class="back" data-a="back"><svg class="ic"><use href="#i-back"/></svg>Aufmaß</button><button class="top-btn" data-a="share"><svg class="ic"><use href="#i-share"/></svg>PDF teilen</button></div>
       <div class="card">
         <div class="grid">
           <div class="full"><label for="a_titel">Bezeichnung</label><input id="a_titel" data-f="titel" type="text" placeholder="z. B. Nische Kühlschrank" value="${esc(r.titel)}"></div>
@@ -307,6 +307,61 @@
     c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); return new Promise(r => c.toBlob(r, 'image/png'));
   }
 
+  // ---------- PDF-Bericht ----------
+  async function sketchJpeg() {
+    const img = await svgToImg(sketch(cur.m, analyze(cur.m), PRINT)); const c = document.createElement('canvas'); c.width = 1360; c.height = 1000;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    return {blob: await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), w: c.width, h: c.height};
+  }
+  const bytes = async blob => new Uint8Array(await blob.arrayBuffer());
+  async function pdfReport() {
+    const PDF = window.MiniPDF, r = cur, a = analyze(r.m), d = new PDF.Doc(), W = PDF.W, M = 42, CW = W - 2 * M;
+    const RED = '#9c1006', INK = '#1c1c1e', GR = '#6e6e73', LN = '#d1d1d6';
+    const v = k => isFinite(P(r.m[k])) ? nf(P(r.m[k]), 1) : '–';
+    const head = (sub) => { d.rect(0, 0, W, 6, RED); d.text(M, 40, 'AUFMASS', {size: 9, bold: true, color: RED}); d.text(W - M, 40, sub, {size: 9, color: GR, align: 'right'}); };
+    let page = 1; const foot = () => d.text(W / 2, 815, 'Erstellt am ' + new Date().toLocaleDateString('de-DE') + ' · Seite ' + page, {size: 8, color: GR, align: 'center'});
+    head(dt(r.datum));
+    let y = d.para(M, 66, r.titel || 'Ohne Bezeichnung', CW, {size: 22, bold: true, color: INK, lh: 26});
+    if (r.ort) { d.text(M, y + 2, 'Baustelle / Kunde: ' + r.ort, {size: 11, color: GR}); y += 18; }
+    y += 8; d.line(M, y, W - M, y, LN, .6); y += 14;
+    // Skizze links, Bauteilmaß rechts
+    const sk = await sketchJpeg(), skW = 300, skH = skW * sk.h / sk.w;
+    d.image(await bytes(sk.blob), sk.w, sk.h, M - 6, y, skW, skH);
+    const bx = M + skW + 10, bw = W - M - bx;
+    if (a.ready) {
+      d.rect(bx, y + 6, bw, 74, '#f6efee'); d.rect(bx, y + 6, 3, 74, RED);
+      d.text(bx + 12, y + 24, 'BAUTEIL MAX.', {size: 8, bold: true, color: RED});
+      d.text(bx + 12, y + 48, nf(a.bauteil.b, 1) + ' × ' + nf(a.bauteil.h, 1), {size: 18, bold: true, color: INK});
+      d.text(bx + 12, y + 66, 'mm (B × H), Fuge abgezogen', {size: 8, color: GR});
+      const st = {ok: ['Im Winkel', '#34c759'], warn: ['Leicht schief', '#ff9500'], bad: ['Deutlich schief', '#ff3b30']}[a.status];
+      d.circle(bx + 16, y + 102, 5, st[1]); d.text(bx + 28, y + 105, st[0], {size: 11, bold: true, color: INK});
+    }
+    y += Math.max(skH, 130) + 10;
+    // Messwerte
+    d.text(M, y, 'MESSWERTE (mm)', {size: 9, bold: true, color: GR}); y += 8;
+    const rowsM = [['Breite', 'oben ' + v('bo'), 'Mitte ' + v('bm'), 'unten ' + v('bu')], ['Höhe', 'links ' + v('hl'), 'Mitte ' + v('hm'), 'rechts ' + v('hr')],
+      ['Diagonalen', '\\ ' + v('d1'), '/ ' + v('d2'), ''], ['Tiefe', 'oben ' + v('to'), 'unten ' + v('tu'), ''], ['Fuge', 'Seite ' + v('fs'), 'oben ' + v('fo'), 'unten ' + v('fu')]];
+    rowsM.forEach(rw => { y += 18; d.line(M, y + 5, W - M, y + 5, LN, .4); d.text(M, y, rw[0], {size: 10, bold: true, color: INK}); rw.slice(1).forEach((c, i) => d.text(M + 110 + i * 135, y, c, {size: 10, color: INK})); });
+    y += 28;
+    // Auswertung
+    if (a.ready && a.msgs.length) {
+      d.text(M, y, 'AUSWERTUNG', {size: 9, bold: true, color: GR}); y += 16;
+      a.msgs.forEach(([s, t]) => { d.circle(M + 4, y - 3.5, 3.2, {ok: '#34c759', warn: '#ff9500', bad: '#ff3b30'}[s] || GR); y = d.para(M + 14, y, t, CW - 14, {size: 10, color: INK, bold: s === 'bad', lh: 13.5}) + 5; });
+      y += 8;
+    }
+    if (r.notiz) { d.text(M, y, 'NOTIZ', {size: 9, bold: true, color: GR}); y = d.para(M, y + 16, r.notiz, CW, {size: 10, color: INK, lh: 13.5}) + 6; }
+    foot();
+    // Fotos: zwei pro Seite
+    for (let i = 0; i < r.fotos.length; i++) {
+      if (i % 2 === 0) { d.add(); page++; head((r.titel || '') + ' · Fotos'); foot(); }
+      const f = r.fotos[i], jb = await fotoWithLines(f), boxY = i % 2 === 0 ? 62 : 432, maxW = CW, maxH = 340;
+      const k = Math.min(maxW / f.w, maxH / f.h), w = f.w * k, h = f.h * k;
+      d.image(await bytes(jb), f.w, f.h, M + (maxW - w) / 2, boxY, w, h);
+      d.text(M, boxY + h + 14, 'Foto ' + (i + 1) + ((f.lines || []).length ? ' · ' + f.lines.map(l => l.t).join(', ') : ''), {size: 9, color: GR});
+    }
+    return d.blob();
+  }
+
   // ---------- Teilen ----------
   function shareText() {
     const r = cur, a = analyze(r.m), v = k => isFinite(P(r.m[k])) ? nf(P(r.m[k]), 1) : '–';
@@ -322,8 +377,8 @@
   async function share() {
     const text = shareText(), name = (cur.titel || 'Aufmass').replace(/[^\wäöüÄÖÜß-]+/g, '_').slice(0, 40);
     try {
-      const files = [new File([await sketchPng()], name + '_Skizze.png', {type: 'image/png'})];
-      for (let i = 0; i < cur.fotos.length; i++) files.push(new File([await fotoWithLines(cur.fotos[i])], `${name}_Foto${i + 1}.jpg`, {type: 'image/jpeg'}));
+      toast('PDF wird erstellt …');
+      const files = [new File([await pdfReport()], `Aufmass_${name}.pdf`, {type: 'application/pdf'})];
       const C = window.Capacitor, native = C && C.isNativePlatform && C.isNativePlatform();
       if (native || (navigator.canShare && navigator.canShare({files}))) { await shareFiles({title: 'Aufmaß ' + (cur.titel || ''), text, files}); return; }
       if (navigator.share) { await navigator.share({title: 'Aufmaß', text}); return; }
@@ -408,5 +463,5 @@
     return {aufmass: n, fotos: nf};
   }
 
-  window.Baustelle = {analyze, sketch, exportData, importData};
+  window.Baustelle = {analyze, sketch, exportData, importData, pdfReport: () => pdfReport()};
 })();
