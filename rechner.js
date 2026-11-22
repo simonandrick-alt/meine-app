@@ -204,6 +204,17 @@
       const anz = gb > 0 ? Math.ceil(l / gb - 1e-9) : 0;
       return {big: nf(l, 2) + ' Liter', rows: [['Gesamtfläche', nf(F, 2) + ' m²'], ...(gb > 0 ? [['Gebinde', anz + ' × ' + nf(gb, 2) + ' l']] : []), ...(p && anz ? [['Kosten', eur(anz * p)]] : [])]};
     }});
+  def('fug', {g: 'Werkstatt', icon: 'i-drop', t: 'Fugenmasse', d: 'Silikon, Acryl – Kartuschen',
+    f: [{k: 'b', l: 'Fugenbreite', u: 'len', v: 8}, {k: 't', l: 'Fugentiefe', u: 'len', v: 5},
+      {k: 'L', l: 'Fugenlänge gesamt (m)', v: 12}, {k: 'k', l: 'Kartusche (ml)', v: 310},
+      {k: 'z', l: 'Zuschlag Verlust (%)', v: 10, full: 1}],
+    intro: 'Faustregel: Fuge etwa doppelt so breit wie tief. Dreiecksfugen (z. B. Anschluss an Fliesen) etwa halb so viel Masse.',
+    calc(g) {
+      const b = g('b'), t = g('t'), L = g('L', 0) * 1000, k = g('k', 310) || 310, z = g('z', 0);
+      if (!(b > 0 && t > 0 && L > 0)) return {err: 'Bitte Breite, Tiefe und Länge eingeben.'};
+      const ml = b * t * L / 1000 * (1 + z / 100), n = Math.ceil(ml / k - 1e-9), reach = k * 1000 / (b * t) / 1000;
+      return {big: n + (n === 1 ? ' Kartusche' : ' Kartuschen'), rows: [['Bedarf', nf(ml, 0) + ' ml'], ['Reichweite je Kartusche', nf(reach, 1) + ' m'], ['Verhältnis Breite : Tiefe', nf(b / t, 1) + ' : 1']]};
+    }});
   def('ang', {g: 'Werkstatt', icon: 'i-doc', t: 'Angebot', d: 'Material + Lohn + MwSt',
     f: [{k: 'm', l: 'Material netto (€)', v: '', ph: 'z. B. 450'}, {k: 'z', l: 'Material-Zuschlag (%)', v: 15},
       {k: 'h', l: 'Stunden', v: '', ph: 'z. B. 12'}, {k: 's', l: 'Stundensatz (€)', v: 58},
@@ -422,6 +433,14 @@
       o += T(160, 30, x + ' Anstrich' + (x > 1 ? 'e' : '') + (both ? ', beidseitig' : ''), 'dl') + T(160, 160, nf(g('c', 0), 0) + ' ml je m² und Anstrich', 'ul');
       return svgW(o);
     },
+    fug(g) {
+      const b = g('b', 8), t = g('t', 5), sc = Math.min(120 / Math.max(b, 1), 70 / Math.max(t, 1), 9), w = b * sc, d = t * sc, ox = 160 - w / 2, oy = 60;
+      let o = `<path d="M40 ${oy}H${ox}V${oy + d + 30}H40Z" class="pl dk"/><path d="M${ox + w} ${oy}H280V${oy + d + 30}H${ox + w}Z" class="pl dk"/>`;
+      o += `<path d="M${ox} ${oy}H${ox + w}V${oy + d}H${ox}Z" class="coat" style="opacity:.75"/><circle cx="${ox + w / 2}" cy="${oy + d + 6}" r="${Math.min(w / 2, 6)}" class="pl"/>`;
+      o += dim(ox, oy, ox + w, oy, 'Breite ' + len(b), -14) + dim(ox + w, oy, ox + w, oy + d, 'Tiefe ' + len(t), 16);
+      o += T(160, 150, 'Hinterfüllprofil unter der Fuge', 'ul');
+      return svgW(o, 170);
+    },
     ang(g) {
       const mat = g('m', 0) * (1 + g('z', 0) / 100), lohn = g('h', 0) * g('s', 0), so = g('x', 0), mw = (mat + lohn + so) * g('t', 0) / 100, tot = mat + lohn + so + mw;
       if (!(tot > 0)) return svgW(brd(20, 70, 280, 22, 'pl') + T(160, 120, 'Material und Stunden eingeben', 'ul'));
@@ -456,7 +475,7 @@
 
   // ---- Anzeige ----
   // Farben der Icon-Kacheln (iOS-Systemfarben)
-  const COL = {vol: '#a2845e', fla: '#ff9500', lfm: '#ffcc00', pla: '#34c759', dre: '#007aff', win: '#5856d6', geh: '#af52de', ver: '#30b0c7', tre: '#9c1006', obf: '#ff2d55', ang: '#8e8e93'};
+  const COL = {fug: '#5ac8fa', vol: '#a2845e', fla: '#ff9500', lfm: '#ffcc00', pla: '#34c759', dre: '#007aff', win: '#5856d6', geh: '#af52de', ver: '#30b0c7', tre: '#9c1006', obf: '#ff2d55', ang: '#8e8e93'};
   const root = () => document.getElementById('rech');
   const unitSeg = () => `<div class="seg" role="group" aria-label="Einheit">${Object.keys(UNITS).map(u => `<button data-unit="${u}" class="${u === S.unit ? 'on' : ''}">${u}</button>`).join('')}</div>`;
   function render() {

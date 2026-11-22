@@ -273,6 +273,46 @@ html.locked body>*:not(#lock){visibility:hidden}
 .about{display:flex;align-items:center;gap:14px}
 .about img{width:56px;height:56px;border-radius:13px}
 .about b{display:block;font-size:17px}.about small{color:var(--muted);font-size:14px}
+
+/* ===== Stempeluhr ===== */
+h2 .ic:has(use[href="#i-clock"]){background:#007aff}h2 .ic:has(use[href="#i-plus"]){background:#8e8e93}h2 .ic:has(use[href="#i-level"]){background:#34c759}
+.clock{text-align:center}.clock h2{text-align:left}
+.clock label{text-align:left}
+.clk-bs{font-size:17px;font-weight:600;color:var(--ink2);margin-top:4px}
+.clk-t{font:200 56px/1.1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:6px 0 2px}
+.clk-s{color:var(--muted);font-size:15px}
+.clock.running .clk-t{color:var(--brass2)}
+button.add.go{background:#34c759}button.add.stop{background:var(--bad)}
+button.add.go .ic,button.add.stop .ic{fill:currentColor}
+.z-chips{margin-top:10px;justify-content:flex-start}
+.chip{border:0;background:var(--bg2);color:var(--ink);border-radius:999px;padding:8px 14px;font:500 15px/1 var(--sans)}
+.wk-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px}
+.wk-nav div{text-align:center}.wk-nav b{display:block;font-size:20px}.wk-nav small{color:var(--muted);font-size:13px}
+.wk-nav .top-btn{width:38px;height:38px;padding:0}
+.list li > span{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+/* ===== Wasserwaage ===== */
+.lv-box{text-align:center;padding:6px 0}
+.lv-dose{position:relative;width:180px;height:180px;margin:6px auto 10px;border-radius:50%;background:radial-gradient(circle,#e9f7c8,#b9e07a);box-shadow:inset 0 2px 10px rgba(0,0,0,.25)}
+.lv-dose .ring{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px;border:2px solid rgba(0,0,0,.45);border-radius:50%}
+.lv-dose .bub,.lv-tube .bub{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#f4ffd8 60%,#d6ee9e);box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .08s linear}
+.lv-tube{position:relative;height:56px;margin:14px 6px 10px;border-radius:28px;background:linear-gradient(#e9f7c8,#b9e07a);box-shadow:inset 0 2px 10px rgba(0,0,0,.25)}
+.lv-tube .bub{width:70px;height:32px;margin:-16px -35px;border-radius:16px}
+.lv-tube .mk{position:absolute;top:6px;bottom:6px;width:2px;background:rgba(0,0,0,.45)}.lv-tube .mk.l{left:calc(50% - 38px)}.lv-tube .mk.r{left:calc(50% + 36px)}
+.lv-dose.ok,.lv-tube.ok{background:radial-gradient(circle,#c8f5d4,#5fd884)}
+.lv-big{font:300 48px/1.1 var(--sans);font-variant-numeric:tabular-nums}.lv-big.ok{color:var(--good);font-weight:500}
+.lv-sub{color:var(--muted);font-size:15px;margin-top:2px}
+.lnk{border:0;background:none;color:var(--brass);font:inherit;padding:0;text-decoration:underline}
+/* ===== Spickzettel ===== */
+details.sp{border-bottom:.5px solid var(--line)}details.sp:last-child{border-bottom:0}
+details.sp summary{list-style:none;cursor:pointer}details.sp summary::-webkit-details-marker{display:none}
+details.sp summary .bd{border-bottom:0}
+details.sp[open] .chev{transform:rotate(90deg)}
+.sp-in{padding:2px 16px 16px}
+.tbl{overflow-x:auto;margin:6px 0 4px;-webkit-overflow-scrolling:touch}
+.tbl table{border-collapse:collapse;width:100%;font-size:14px;min-width:420px}
+.tbl th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:6px 8px;border-bottom:.5px solid var(--line2)}
+.tbl td{padding:8px;border-bottom:.5px solid var(--line);vertical-align:top;font-variant-numeric:tabular-nums}
+.spick{margin:6px 0 0;padding-left:20px;font-size:15px;color:var(--ink2)}.spick li{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -309,6 +349,16 @@ html.locked body>*:not(#lock){visibility:hidden}
   <symbol id="i-back" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6.5 10.5H5v10h14v-10h-1.5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5M12 2.5V5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></symbol>
+  <symbol id="i-door" viewBox="0 0 24 24"><path d="M5 21V3.5h11V21M3 21h18"/><path d="M16 5.5l3 1.2V21"/><path d="M13 12.5v1"/></symbol>
+  <symbol id="i-drill" viewBox="0 0 24 24"><path d="M3.5 8.5h11l2 2v2l-2 2h-11z"/><path d="M16.5 11.5h5M6 14.5l-1.5 6h5l1-6"/></symbol>
+  <symbol id="i-screw" viewBox="0 0 24 24"><path d="M7.5 4.5h9M9 4.5v3h6v-3"/><path d="M10 7.5v11l2 3 2-3v-11M10 10.5l4-1M10 13.5l4-1M10 16.5l4-1"/></symbol>
+  <symbol id="i-gap" viewBox="0 0 24 24"><path d="M3 5h7v14H3M21 5h-7v14h7"/><path d="M12 8v8" stroke-dasharray="2 2"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6 6.4 6 10.5a6 6 0 0 1-12 0c0-4.1 6-10.5 6-10.5z"/></symbol>
+  <symbol id="i-level" viewBox="0 0 24 24"><rect x="2.5" y="8.5" width="19" height="7" rx="1.5"/><rect x="9" y="10.3" width="6" height="3.4" rx="1.7"/><path d="M12 10.3v3.4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5c2.5-1.3 5.5-1.3 8 0 2.5-1.3 5.5-1.3 8 0v13c-2.5-1.3-5.5-1.3-8 0-2.5-1.3-5.5-1.3-8 0z"/><path d="M12 5.5v13"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
 </svg>
 <div class="sbar"></div>
@@ -323,7 +373,23 @@ html.locked body>*:not(#lock){visibility:hidden}
 <section id="rech" class="tab-work on"></section>
 
 <!-- ============ BAUSTELLE ============ -->
+<div class="ios-seg tab-site" id="site-seg" role="tablist">
+  <button data-site="auf">Aufmaß</button><button data-site="zeit">Zeiten</button><button data-site="tools">Werkzeuge</button>
+</div>
 <section id="auf" class="tab-site"></section>
+<section id="zeit" class="tab-site"></section>
+<section id="tools" class="tab-site">
+<div class="card">
+  <h2><svg class="ic"><use href="#i-level"/></svg>Wasserwaage</h2>
+  <div id="lv_start"><p class="hint" style="margin-top:0">Lege das iPhone flach auf (Dosenlibelle) oder stelle es auf die lange bzw. kurze Kante (Röhrenlibelle). Hülle vorher abnehmen – sie verfälscht das Ergebnis.</p>
+    <button class="add" data-lv="start"><svg class="ic"><use href="#i-level"/></svg>Wasserwaage starten</button></div>
+  <div id="lv_live" style="display:none"><div id="lv_box" class="lv-box"><p class="empty">Warte auf Sensor …</p></div>
+    <div class="r-act"><button class="clear" data-lv="zero">Kalibrieren</button><button class="clear" data-lv="stop">Beenden</button></div>
+    <p class="hint">Zum Kalibrieren auf eine sicher ebene Fläche legen, „Kalibrieren“ tippen, um 180° drehen und prüfen. Genauigkeit etwa ±0,1–0,2°. <button class="lnk" data-lv="reset">Kalibrierung zurücksetzen</button></p></div>
+</div>
+<p class="sec-h">Montage-Spickzettel</p>
+<div class="rows" id="spick"></div>
+</section>
 
 <!-- ============ KÜCHE ============ -->
 <section id="kue" class="tab-kue">
@@ -407,7 +473,7 @@ html.locked body>*:not(#lock){visibility:hidden}
 <div class="card" id="sec_card"></div>
 <div class="card">
   <h2><svg class="ic"><use href="#i-archive"/></svg>Sicherung</h2>
-  <p class="hint" style="margin-top:0">Deine Einträge liegen nur auf diesem Gerät. Die Sicherung enthält Freizeit-Einträge, Rechner-Werte und alle <b>Aufmaße mit Fotos</b>. Speichere sie z. B. über „In Dateien sichern“ in iCloud Drive.</p>
+  <p class="hint" style="margin-top:0">Deine Einträge liegen nur auf diesem Gerät. Die Sicherung enthält Freizeit-Einträge, Rechner-Werte, <b>Arbeitszeiten</b> und alle <b>Aufmaße mit Fotos</b>. Speichere sie z. B. über „In Dateien sichern“ in iCloud Drive.</p>
   <button class="add" id="bk_exp"><svg class="ic"><use href="#i-share"/></svg>Sicherung erstellen</button>
   <button class="clear" id="bk_imp">Sicherung wiederherstellen</button>
   <input type="file" id="bk_file" accept="application/json,.json" hidden>
@@ -429,6 +495,8 @@ html.locked body>*:not(#lock){visibility:hidden}
 
 <script src="rechner.js"></script>
 <script src="baustelle.js"></script>
+<script src="zeiten.js"></script>
+<script src="werkzeuge.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
