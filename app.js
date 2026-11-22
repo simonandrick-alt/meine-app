@@ -187,12 +187,12 @@ addEventListener('touchend', () => {
 });
 
 // ===== Navigation =====
-const SUB = {work: 'Werkstatt', free: 'Freizeit'};
-const last = {work: 'rech', free: 'kue'};
+const SUB = {work: 'Werkstatt', site: 'Baustelle', free: 'Freizeit'};
+const last = {work: 'rech', site: 'auf', free: 'kue'};
 let area = 'work';
 function greet(){ const h = new Date().getHours(); $('greet').textContent = h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 17 ? 'Guten Tag' : h < 22 ? 'Guten Abend' : 'Gute Nacht'; }
 function go(id){
-  if (!$(id)) id = area === 'work' ? 'rech' : 'kue';
+  if (!$(id) || !$(id).classList.contains(area)) id = {work: 'rech', site: 'auf', free: 'kue'}[area];
   document.querySelectorAll('main > section').forEach(s => s.classList.toggle('on', s.id === id));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.go === id));
   last[area] = id;
@@ -203,13 +203,13 @@ function setArea(a){
   area = a;
   document.querySelectorAll('.switch button').forEach(b => b.classList.toggle('on', b.dataset.area === a));
   $('nav-free').classList.toggle('on', a === 'free');
-  document.body.classList.toggle('nonav', a === 'work');
+  document.body.classList.toggle('nonav', a !== 'free');
   $('subtitle').textContent = SUB[a];
   go(last[a]);
 }
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
 document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => setArea(b.dataset.area)));
-try { const n = JSON.parse(localStorage.getItem(KEY + '-nav') || 'null'); if (n) { if (n.last && n.last.free) last.free = n.last.free; area = n.area === 'free' ? 'free' : 'work'; } } catch (e) {}
+try { const n = JSON.parse(localStorage.getItem(KEY + '-nav') || 'null'); if (n) { if (n.last && n.last.free) last.free = n.last.free; area = ['work', 'site', 'free'].includes(n.area) ? n.area : 'work'; } } catch (e) {}
 greet(); setInterval(greet, 600000);
 
 renderAll();
