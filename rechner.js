@@ -119,9 +119,9 @@
           ['Höhe auf a', len(2 * F / a)], ['Höhe auf b', len(2 * F / b)], ['Höhe auf c', len(2 * F / c)],
           ['Inkreis-Radius', len(2 * F / U)], ['Umkreis-Radius', len(a / (2 * Math.sin(A * DEG)))], ['Art', typ.join(', ')]]};
       };
-      if (sols.length === 1) { const o = one(sols[0]); return {big: 'Dreieck berechnet', svg: o.svg, rows: o.rows}; }
+      if (sols.length === 1) { const o = one(sols[0]); return {big: 'Dreieck berechnet', rows: o.rows, sol: sols[0]}; }
       const o1 = one(sols[0]), o2 = one(sols[1]);
-      return {big: '2 Lösungen möglich', note: 'Mit zwei Seiten und einem nicht eingeschlossenen Winkel gibt es hier zwei passende Dreiecke.',
+      return {sol: sols[0], big: '2 Lösungen möglich', note: 'Mit zwei Seiten und einem nicht eingeschlossenen Winkel gibt es hier zwei passende Dreiecke.',
         groups: [{t: 'Lösung 1', ...o1}, {t: 'Lösung 2', ...o2}]};
     }});
   def('win', {g: 'Geometrie', icon: 'i-roof', t: 'Neigung & Schräge', d: 'Dach, Rampe, Gefälle',
@@ -136,7 +136,7 @@
       else h = h, l = h / Math.tan(w * DEG);
       if (!(w > 0 && w < 90) || !(h > 0) || !(l > 0)) return {err: 'Die Werte ergeben keine gültige Neigung.'};
       const sl = Math.hypot(h, l);
-      return {big: deg(w) + ' · ' + nf(h / l * 100, 1) + ' %', svg: triSvg([h, l, sl], [w, 90 - w, 90], ['', '', ''], true),
+      return {h, l, w, big: deg(w) + ' · ' + nf(h / l * 100, 1) + ' %',
         rows: [['Neigung', deg(w)], ['Steigung', nf(h / l * 100, 2) + ' %'], ['Höhe', len(h)], ['Waagerechte Länge', len(l)], ['Schräge Länge', len(sl)],
           ['Verhältnis', '1 : ' + nf(l / h, 2)]], note: isFinite(g('w', NaN)) && has === 3 ? 'Es wurden Höhe und Länge verwendet, der Winkel wurde neu berechnet.' : ''};
     }});
@@ -279,6 +279,160 @@
     return out + '</svg>';
   }
 
+  // ---- Skizzen oben im Rechner ----
+  const W0 = 320, H0 = 190;
+  const T = (x, y, t, cls = 'dl', anc = 'middle', rot = 0) => `<text x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" class="${cls}" text-anchor="${anc}" dominant-baseline="middle"${rot ? ` transform="rotate(${rot.toFixed(1)} ${(+x).toFixed(1)} ${(+y).toFixed(1)})"` : ''}>${esc(t)}</text>`;
+  const svgW = (inner, h = H0) => `<svg viewBox="0 0 ${W0} ${h}" class="sk fig">${inner}</svg>`;
+  // Maßlinie mit Endstrichen und Beschriftung
+  function dim(x1, y1, x2, y2, label, off = 14, cls = 'dl') {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1, nx = -dy / L * off, ny = dx / L * off;
+    const a = [x1 + nx, y1 + ny], b = [x2 + nx, y2 + ny], tx = -dy / L * 5, ty = dx / L * 5;
+    let ang = Math.atan2(dy, dx) / DEG; if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
+    const mx = (a[0] + b[0]) / 2 + nx / off * 10, my = (a[1] + b[1]) / 2 + ny / off * 10;
+    return `<line x1="${x1}" y1="${y1}" x2="${a[0]}" y2="${a[1]}" class="ext"/><line x1="${x2}" y1="${y2}" x2="${b[0]}" y2="${b[1]}" class="ext"/>` +
+      `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="dim"/>` +
+      `<line x1="${a[0] - tx}" y1="${a[1] - ty}" x2="${a[0] + tx}" y2="${a[1] + ty}" class="dim"/><line x1="${b[0] - tx}" y1="${b[1] - ty}" x2="${b[0] + tx}" y2="${b[1] + ty}" class="dim"/>` +
+      T(mx, my, label, cls, 'middle', ang);
+  }
+  const lenOr = (x, name) => isFinite(x) && x > 0 ? len(x) : name;
+  // Dreieck mit Beschriftung (bekannte Werte in Gold, unbekannte nur als Buchstabe)
+  function triFig(s3, w3, kS, kW) {
+    const [a, b, c] = s3, A = w3[0] * DEG;
+    const P = [[0, 0], [c, 0], [b * Math.cos(A), b * Math.sin(A)]];
+    const xs = P.map(p => p[0]), ys = P.map(p => p[1]), pad = 34;
+    const minx = Math.min(...xs), maxx = Math.max(...xs), maxy = Math.max(...ys);
+    const sc = Math.min((W0 - 2 * pad - 20) / (maxx - minx || 1), (H0 - 2 * pad) / (maxy || 1));
+    const ox = (W0 - (maxx - minx) * sc) / 2 - minx * sc, oy = H0 - pad + 4;
+    const Q = P.map(([x, y]) => [ox + x * sc, oy - y * sc]);
+    const cx = (Q[0][0] + Q[1][0] + Q[2][0]) / 3, cy = (Q[0][1] + Q[1][1] + Q[2][1]) / 3;
+    const away = (x, y, d) => { const dx = x - cx, dy = y - cy, l = Math.hypot(dx, dy) || 1; return [x + dx / l * d, y + dy / l * d]; };
+    let o = `<polygon points="${Q.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" class="tri"/>`;
+    ['A', 'B', 'C'].forEach((n, i) => { o += T(...away(Q[i][0], Q[i][1], 15), n, 'vl'); });
+    const sn = ['a', 'b', 'c'], gn = ['α', 'β', 'γ'];
+    [[1, 2], [0, 2], [0, 1]].forEach(([p, q], i) => {
+      const m = [(Q[p][0] + Q[q][0]) / 2, (Q[p][1] + Q[q][1]) / 2];
+      o += T(...away(m[0], m[1], kS[i] ? 22 : 13), kS[i] ? sn[i] + ' = ' + len(s3[i]) : sn[i], kS[i] ? 'dl' : 'ul');
+    });
+    Q.forEach((q, i) => {
+      const f = kW[i] ? .34 : .26, x = q[0] + (cx - q[0]) * f, y = q[1] + (cy - q[1]) * f;
+      o += T(x, y, kW[i] ? gn[i] + ' ' + nf(w3[i], 1) + '°' : gn[i], kW[i] ? 'al k' : 'al');
+    });
+    return svgW(o);
+  }
+  function brd(x, y, w, h, cls = 'pl') { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" class="${cls}"/>`; }
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const FIG = {
+    vol(g) { // Brett isometrisch
+      const L = g('l', 2000), B = g('b', 200), D = g('d', 27), n = g('n', 1) || 1;
+      const sc = 200 / Math.max(L, 1), w = 200, d = clamp(D * sc, 8, 36), bb = clamp(B * sc, 18, 60), ox = 40, oy = 104;
+      const dx = bb * .87, dy = bb * .5;
+      let o = `<polygon points="${ox},${oy} ${ox + w},${oy} ${ox + w + dx},${oy - dy} ${ox + dx},${oy - dy}" class="pt"/>` +
+        `<polygon points="${ox},${oy} ${ox + w},${oy} ${ox + w},${oy + d} ${ox},${oy + d}" class="pl"/>` +
+        `<polygon points="${ox + w},${oy} ${ox + w + dx},${oy - dy} ${ox + w + dx},${oy - dy + d} ${ox + w},${oy + d}" class="pl dk"/>`;
+      for (let i = 1; i < 5; i++) o += `<path d="M${ox + 10 + i * 40} ${oy - 2}q${dx * .3} ${-dy * .4} ${dx * .7} ${-dy * .9}" class="grain"/>`;
+      o += dim(ox, oy + d, ox + w, oy + d, 'Länge ' + len(L), 16);
+      o += T(ox + w / 2 + dx / 2, oy - dy - 12, 'Breite ' + len(B), 'dl');
+      o += T(ox + w / 2, oy + d + 46, 'Stärke ' + len(D), 'dl');
+      if (n > 1) o += T(ox, 26, '× ' + nf(n, 0) + ' Stück', 'ul', 'start');
+      return svgW(o);
+    },
+    fla(g) {
+      const L = g('l', 2440), B = g('b', 1220), n = g('n', 1) || 1, sc = Math.min(230 / L, 120 / B), w = L * sc, h = B * sc, ox = (W0 - w) / 2 - 10, oy = 26;
+      let o = (n > 1 ? brd(ox + 6, oy - 6, w, h, 'pl') : '') + brd(ox, oy, w, h, 'pt');
+      o += dim(ox, oy + h, ox + w, oy + h, 'Länge ' + len(L), 16) + dim(ox + w, oy + h, ox + w, oy, 'Breite ' + len(B), 16);
+      if (n > 1) o += T(ox + w / 2, oy + h / 2, '× ' + nf(n, 0), 'vl');
+      return svgW(o);
+    },
+    lfm(g) {
+      const L = g('l', 2400), n = g('n', 1) || 1, s = g('s', 0);
+      let o = '';
+      if (s > 0 && L > 0 && L <= s) {
+        const per = Math.floor(s / L), sc = 280 / s, oy = 60;
+        o += brd(20, oy, s * sc, 22, 'pl');
+        for (let i = 0; i < per; i++) o += brd(20 + i * L * sc, oy, L * sc - 1.5, 22, 'pt');
+        o += dim(20, oy, 20 + s * sc, oy, 'Stange ' + len(s), -14) + dim(20, oy + 22, 20 + L * sc, oy + 22, 'Stück ' + len(L), 16);
+        o += T(20, 150, per + ' Stück je Stange · Rest ' + len(s - per * L), 'ul', 'start');
+      } else {
+        const rowsN = Math.min(n, 6);
+        for (let i = 0; i < rowsN; i++) o += brd(30, 30 + i * 14, 260, 9, 'pt');
+        o += dim(30, 30 + (rowsN - 1) * 14 + 9, 290, 30 + (rowsN - 1) * 14 + 9, 'Länge ' + len(L), 18);
+        o += T(30, 18, '× ' + nf(n, 0) + ' Stück', 'ul', 'start');
+      }
+      return svgW(o);
+    },
+    pla(g, r) { return r.svg || ''; },
+    dre(g, r) {
+      const s = ['a', 'b', 'c'].map(k => g(k, NaN)), w = ['A', 'B', 'C'].map(k => g(k, NaN));
+      const kS = s.map(x => isFinite(x) && x > 0), kW = w.map(x => isFinite(x) && x > 0);
+      if (r && r.sol) return triFig(r.sol.s, r.sol.w, kS, kW);
+      return triFig([6, 5, 7], [Math.acos((25 + 49 - 36) / 70) / DEG, Math.acos((36 + 49 - 25) / 84) / DEG, 0], [false, false, false], [false, false, false]).replace(/class="tri"/, 'class="tri sch"')
+        .replace('<svg ', '<svg data-sch="1" ');
+    },
+    win(g, r) {
+      let h = g('h', NaN), l = g('l', NaN), wv = g('w', NaN);
+      const ok = r && !r.err && r.h > 0; if (ok) { h = r.h; l = r.l; wv = r.w; }
+      const H = ok ? h : 1, Lx = ok ? l : 3, sc = Math.min(230 / Lx, 120 / H), w = Lx * sc, hh = H * sc, ox = 40, oy = 150;
+      let o = `<polygon points="${ox},${oy} ${ox + w},${oy} ${ox + w},${oy - hh}" class="tri"/>` + `<path d="M${ox + w - 10} ${oy}v-10h10" class="dim"/>`;
+      o += dim(ox, oy, ox + w, oy, 'Länge ' + lenOr(ok ? l : NaN, ''), 16) + dim(ox + w, oy, ox + w, oy - hh, 'Höhe ' + lenOr(ok ? h : NaN, ''), 16);
+      o += T(ox + 34, oy - 9, ok ? nf(wv, 1) + '°' : 'Winkel', ok ? 'al k' : 'al', 'start');
+      if (ok) o += T(ox + w / 2 - 10, oy - hh / 2 - 12, 'Schräge ' + len(Math.hypot(h, l)), 'ul', 'middle', -Math.atan2(hh, w) / DEG);
+      return svgW(o);
+    },
+    geh(g) {
+      const nIn = Math.round(g('n', 4)), eIn = g('e', NaN);
+      const n = isFinite(eIn) ? 4 : clamp(nIn || 4, 3, 12), eck = isFinite(eIn) ? eIn : 180 * (n - 2) / n;
+      let o = '';
+      if (isFinite(eIn)) { // zwei Teile, die im Eckwinkel zusammenstoßen
+        const cx = 160, cy = 140, a = eIn * DEG, L = 120, wid = 22;
+        const p1 = [cx - L, cy], q1 = [cx - L, cy - wid];
+        const dir2 = [Math.cos(Math.PI - a), -Math.sin(Math.PI - a)];
+        const p2 = [cx + dir2[0] * -L, cy + dir2[1] * -L];
+        const half = (Math.PI - a) / 2, mx = cx + Math.sin(half) * 0, inner = [cx - wid / Math.tan((a) / 2) , cy - wid];
+        o += `<path d="M${p1} L${cx},${cy} L${p2}" class="frame"/>` + `<line x1="${cx}" y1="${cy}" x2="${inner[0]}" y2="${inner[1]}" class="miter"/>`;
+        o += T(cx, cy + 22, 'Eckwinkel ' + nf(eck, 1) + '°', 'dl') + T(cx, 22, 'Säge ' + nf(Math.abs(90 - eck / 2), 2) + '°', 'al k');
+        return svgW(o);
+      }
+      const cx = 160, cy = 98, R = 78, rr = 52, pts = k => Array.from({length: n}, (_, i) => { const t = -Math.PI / 2 + Math.PI / n + i * 2 * Math.PI / n; return [cx + k * Math.cos(t), cy + k * Math.sin(t)]; });
+      const out = pts(R), inn = pts(rr);
+      o += `<path d="M${out.map(p => p.map(v => v.toFixed(1)).join(' ')).join(' L')} Z M${inn.map(p => p.map(v => v.toFixed(1)).join(' ')).join(' L')} Z" class="frame" fill-rule="evenodd"/>`;
+      out.forEach((p, i) => { o += `<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${inn[i][0].toFixed(1)}" y2="${inn[i][1].toFixed(1)}" class="miter"/>`; });
+      o += T(cx, cy, n + ' Ecken', 'vl') + T(cx, cy + 16, 'Säge ' + nf(Math.abs(90 - eck / 2), 2) + '°', 'al k');
+      return svgW(o);
+    },
+    ver(g, r) {
+      if (r && r.svg) return r.svg;
+      return svgW(brd(10, 80, 300, 12, 'pl') + T(160, 120, 'Anzahl oder max. Abstand eingeben', 'ul'));
+    },
+    tre(g, r) {
+      const H = g('H', 2750), s0 = g('s', 180) || 180, M = g('m', 630) || 630;
+      if (!(H > 0)) return '';
+      const n = Math.max(2, Math.round(H / s0)), h = H / n, a = M - 2 * h, run = (n - 1) * a, sc = Math.min(250 / Math.max(run, 1), 135 / H), ox = 24, oy = 172;
+      let d = `M${ox} ${oy}`, x = ox, y = oy;
+      for (let i = 0; i < n; i++) { y -= h * sc; d += ` V${y.toFixed(1)}`; if (i < n - 1) { x += a * sc; d += ` H${x.toFixed(1)}`; } }
+      let o = `<path d="${d} H${(x + 18).toFixed(1)}" class="stair"/><path d="M${ox} ${oy}H${x + 18}" class="ext"/>`;
+      o += dim(x + 18, oy, x + 18, oy - H * sc, 'H ' + len(H), 16);
+      o += T(ox, 16, 'Steigung h ' + len(h) + ' · Auftritt a ' + len(a), 'al k', 'start');
+      o += dim(ox, oy, x, oy, 'Lauflänge ' + len(run), -0.001 + 14);
+      return svgW(o, 205);
+    },
+    obf(g) {
+      const x = clamp(Math.round(g('x', 2)), 1, 6), both = g.raw('z') === 'beidseitig', oy = 90;
+      let o = brd(40, oy, 240, 26, 'pl dk');
+      for (let i = 0; i < x; i++) { o += brd(40, oy - 5 * (i + 1), 240, 4, 'coat'); if (both) o += brd(40, oy + 26 + 1 + 5 * i, 240, 4, 'coat'); }
+      o += T(160, 30, x + ' Anstrich' + (x > 1 ? 'e' : '') + (both ? ', beidseitig' : ''), 'dl') + T(160, 160, nf(g('c', 0), 0) + ' ml je m² und Anstrich', 'ul');
+      return svgW(o);
+    },
+    ang(g) {
+      const mat = g('m', 0) * (1 + g('z', 0) / 100), lohn = g('h', 0) * g('s', 0), so = g('x', 0), mw = (mat + lohn + so) * g('t', 0) / 100, tot = mat + lohn + so + mw;
+      if (!(tot > 0)) return svgW(brd(20, 70, 280, 22, 'pl') + T(160, 120, 'Material und Stunden eingeben', 'ul'));
+      const parts = [['Material', mat, 'p1'], ['Lohn', lohn, 'p2'], ['Sonstiges', so, 'p3'], ['MwSt', mw, 'p4']].filter(p => p[1] > 0);
+      let x = 20, o = '';
+      parts.forEach(([n, v, c], i) => { const w = v / tot * 280; o += `<rect x="${x}" y="56" width="${Math.max(w - 2, 1)}" height="26" class="${c}"/>`; o += T(x + w / 2, 100 + (i % 2) * 18, w > 24 || true ? n : '', 'ul'); x += w; });
+      o += T(20, 34, 'Brutto ' + eur(tot), 'dl', 'start');
+      return svgW(o);
+    },
+  };
+
   // ---- Werte ----
   const vals = id => (S.v[id] ||= {});
   function initVals(id) {
@@ -316,7 +470,9 @@
     }
     const c = C[S.open]; initVals(c.id); const v = vals(c.id);
     el.innerHTML = `<div class="r-top"><button class="back" data-back="1">‹ Alle Rechner</button>${unitSeg()}</div>
-      <div class="card"><h2><svg class="ic"><use href="#${c.icon}"/></svg>${esc(c.t)}</h2>${c.intro ? `<p class="hint" style="margin-top:0">${c.intro}</p>` : ''}
+      <div class="card"><h2><svg class="ic"><use href="#${c.icon}"/></svg>${esc(c.t)}</h2>
+      <div class="fig-box"><div id="r_fig"></div><div class="fig-res" id="r_head"></div></div>
+      ${c.intro ? `<p class="hint">${c.intro}</p>` : ''}
       <div class="grid">${c.f.map(fd => {
         const idf = `r_${c.id}_${fd.k}`, lab = esc(fd.l).replace(/([αβγ])|^(Seite )([abc])$/g, (m, g1, p, s) => g1 ? `<span class="gk">${g1}</span>` : `${p}<span class="gk">${s}</span>`) + (fd.u === 'len' ? ` <span class="gk">(${S.unit})</span>` : '');
         if (fd.sel) return `<div class="${fd.full ? 'full' : ''}"><label for="${idf}">${lab}</label><select id="${idf}" data-k="${fd.k}">${fd.sel.map(o => `<option ${o === v[fd.k] ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>`;
@@ -335,13 +491,18 @@
     lastResult = r;
     const rows = rs => rs.map(([a, b]) => `<div class="row"><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join('');
     let h;
-    if (r.err) h = `<div class="res res-err">${esc(r.err)}</div>`;
+    if (r.err) h = '';
     else {
-      h = r.groups ? `<p class="r-sol">${esc(r.big)}</p>` : `<div class="res"><div class="big">${esc(r.big)}</div>${r.svg || ''}${r.rows ? rows(r.rows) : ''}${(r.list || []).map(([t, x]) => `<div class="r-list"><span>${esc(t)}</span><div>${esc(x)}</div></div>`).join('')}</div>`;
+      h = r.groups ? `<p class="r-sol">${esc(r.big)}</p>` : `<div class="res">${r.rows ? rows(r.rows) : ''}${(r.list || []).map(([t, x]) => `<div class="r-list"><span>${esc(t)}</span><div>${esc(x)}</div></div>`).join('')}</div>`;
       if (r.groups) h += r.groups.map(gp => `<div class="res"><div class="big">${esc(gp.t)}</div>${gp.svg || ''}${rows(gp.rows)}</div>`).join('');
       if (r.note) h += `<p class="hint">${esc(r.note)}</p>`;
     }
     document.getElementById('r_out').innerHTML = h;
+    let fig = ''; try { fig = FIG[c.id] ? FIG[c.id](getter(c.id), r) : ''; } catch (e) { fig = ''; }
+    document.getElementById('r_fig').innerHTML = fig;
+    const hd = document.getElementById('r_head');
+    hd.className = 'fig-res' + (r.err ? ' wait' : '');
+    hd.textContent = r.err ? r.err : r.big;
   }
   function shareText() {
     const c = C[S.open], v = vals(c.id), r = lastResult || {};
