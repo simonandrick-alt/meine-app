@@ -1,4 +1,4 @@
-const CACHE = 'meine-app-v7';
+const CACHE = 'meine-app-v8';
 const FILES = ['./', 'index.html', 'app.js', 'lock.js', 'rechner.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'kueche.json'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));

@@ -36,14 +36,18 @@
   }
   // ===== Face ID / Touch ID / Fingerabdruck (Passkey, nur auf diesem Gerät) =====
   const BKEY = 'meine-app-bio';
-  const bioOn = () => { const b = rd(BKEY); return !!(b && b.id && b.pk) && hasPin(); };
+  // In der iPhone-App (Capacitor) wird Face ID direkt über das iPhone genutzt, im Browser über einen Passkey
+  const NB = () => (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeBiometric) || null;
+  const bioOn = () => { const b = rd(BKEY); return !!(b && (b.native ? NB() : (b.id && b.pk))) && hasPin(); };
   let bioAvailable = false;
-  const bioName = () => /iPhone|iPad|Macintosh/.test(navigator.userAgent) ? 'Face ID' : 'Fingerabdruck';
+  const bioName = () => /iPhone|iPad|Macintosh/.test(navigator.userAgent) || (window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'ios') ? 'Face ID' : 'Fingerabdruck';
   async function bioCheckAvail() {
+    if (NB()) { try { const r = await NB().isAvailable({useFallback: false}); bioAvailable = !!(r && r.isAvailable); } catch (e) { bioAvailable = false; } return; }
     try { bioAvailable = !!(window.PublicKeyCredential && window.isSecureContext && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); }
     catch (e) { bioAvailable = false; }
   }
   async function bioSetup() {
+    if (NB()) { await NB().verifyIdentity({reason: bioName() + ' für Meine App einschalten', title: 'Meine App', useFallback: false}); wr(BKEY, {native: true}); return; }
     const cred = await navigator.credentials.create({publicKey: {
       rp: {name: 'Meine App', id: location.hostname},
       user: {id: crypto.getRandomValues(new Uint8Array(16)), name: 'Meine App', displayName: 'Meine App'},
@@ -66,6 +70,7 @@
   // Prüft die Antwort des Geräts vollständig selbst (Signatur, Absender, Gesichts-/Fingerprüfung)
   async function bioVerify() {
     const b = rd(BKEY); if (!b) return false;
+    if (b.native) { if (!NB()) return false; await NB().verifyIdentity({reason: 'Meine App entsperren', title: 'Meine App', useFallback: false}); return true; }
     const challenge = crypto.getRandomValues(new Uint8Array(32));
     const a = await navigator.credentials.get({publicKey: {challenge, rpId: location.hostname,
       allowCredentials: [{type: 'public-key', id: unb64(b.id)}], userVerification: 'required', timeout: 60000}});

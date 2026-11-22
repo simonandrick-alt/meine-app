@@ -149,8 +149,12 @@ function renderKue(){
 }
 function togglePick(i){ KS.pick = KS.pick.includes(i) ? KS.pick.filter(x => x !== i) : [...KS.pick, i]; kstore(); renderKue(); }
 function toggleDone(el, k){ k = decodeURIComponent(k); KS.done = el.checked ? [...KS.done, k] : KS.done.filter(x => x !== k); kstore(); el.parentElement.classList.toggle('done', el.checked); }
+const KUECHE_URL = 'https://simonandrick-alt.github.io/meine-app/kueche.json';
 function loadKue(){
-  return fetch('kueche.json?t=' + Date.now(), {cache: 'no-store'}).then(r => { if (!r.ok) throw 0; return r.json(); }).then(j => { K = j; renderKue(); return true; })
+  // In der iPhone-App immer die aktuelle Fassung aus dem Internet holen, sonst die mitgelieferte
+  const native = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+  const get = u => fetch(u + '?t=' + Date.now(), {cache: 'no-store'}).then(r => { if (!r.ok) throw 0; return r.json(); });
+  return (native ? get(KUECHE_URL).catch(() => get('kueche.json')) : get('kueche.json')).then(j => { K = j; renderKue(); return true; })
     .catch(() => { if (!K) $('kue_head').innerHTML = '<h2><svg class="ic"><use href="#i-cloche"/></svg>Küche der Woche</h2><p class="empty">Angebote konnten nicht geladen werden. Bist du online?</p><button class="refresh" data-refresh="1">Nochmal versuchen</button>'; return false; });
 }
 loadKue();

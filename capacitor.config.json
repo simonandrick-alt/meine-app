@@ -1,0 +1,9 @@
+{
+  "appId": "de.simonandrick.meineapp",
+  "appName": "Meine App",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0e1216"
+  }
+}
