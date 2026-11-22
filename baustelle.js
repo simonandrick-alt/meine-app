@@ -11,6 +11,23 @@
   const $ = id => document.getElementById(id);
   function toast(t) { const el = $('toast'); if (!el) return; el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
 
+  // ---------- Dateien teilen ----------
+  const blobToB64 = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(blob); });
+  async function shareFiles({title, text, files}) {
+    const C = window.Capacitor, native = C && C.isNativePlatform && C.isNativePlatform();
+    const FS = native && C.Plugins && C.Plugins.Filesystem, SH = native && C.Plugins && C.Plugins.Share;
+    if (FS && SH) {
+      const uris = [];
+      for (const f of files) { const r = await FS.writeFile({path: f.name, data: await blobToB64(f), directory: 'CACHE'}); uris.push(r.uri); }
+      await SH.share({title, text, files: uris, dialogTitle: title});
+      return 'shared';
+    }
+    if (navigator.canShare && navigator.canShare({files})) { await navigator.share({title, text, files}); return 'shared'; }
+    for (const f of files) { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+    return 'downloaded';
+  }
+  window.ShareFiles = shareFiles;
+
   // ---------- Speicher (IndexedDB, nur auf diesem Gerät) ----------
   let dbp = null;
   function db() {
@@ -305,9 +322,10 @@
     try {
       const files = [new File([await sketchPng()], name + '_Skizze.png', {type: 'image/png'})];
       for (let i = 0; i < cur.fotos.length; i++) files.push(new File([await fotoWithLines(cur.fotos[i])], `${name}_Foto${i + 1}.jpg`, {type: 'image/jpeg'}));
-      if (navigator.canShare && navigator.canShare({files})) { await navigator.share({title: 'Aufmaß ' + (cur.titel || ''), text, files}); return; }
+      const C = window.Capacitor, native = C && C.isNativePlatform && C.isNativePlatform();
+      if (native || (navigator.canShare && navigator.canShare({files}))) { await shareFiles({title: 'Aufmaß ' + (cur.titel || ''), text, files}); return; }
       if (navigator.share) { await navigator.share({title: 'Aufmaß', text}); return; }
-    } catch (e) { if (e && e.name === 'AbortError') return; }
+    } catch (e) { if (e && (e.name === 'AbortError' || /cancel/i.test(e.message || ''))) return; }
     try { await navigator.clipboard.writeText(text); toast('Aufmaß als Text kopiert'); } catch (e) { toast('Teilen nicht möglich'); }
   }
 
@@ -350,5 +368,43 @@
       if (i >= 0 && ins[i + 1]) { e.preventDefault(); ins[i + 1].focus(); }
     });
   });
-  window.Baustelle = {analyze, sketch};
+  // ---------- Sicherung ----------
+  async function exportData() {
+    const aufmass = await getAll('aufmass'), fotos = [];
+    for (const f of await getAll('fotos')) fotos.push({id: f.id, type: f.blob.type || 'image/jpeg', b64: await blobToB64(f.blob)});
+    return {aufmass, fotos};
+  }
+  // Prüft jede Angabe, damit eine präparierte Datei nichts anrichten kann
+  const sid = x => typeof x === 'string' && /^[a-z0-9]{1,24}$/i.test(x) ? x : null;
+  const sstr = (x, n = 200) => typeof x === 'string' || typeof x === 'number' ? String(x).slice(0, n) : '';
+  const snum = (x, lo, hi) => { const v = Number(x); return isFinite(v) && v >= lo && v <= hi ? v : null; };
+  function cleanRec(r) {
+    if (!r || typeof r !== 'object' || !sid(r.id)) return null;
+    const m = {}; Object.keys(F).forEach(k => { if (r.m && r.m[k] != null) m[k] = sstr(r.m[k], 40); });
+    const fotos = (Array.isArray(r.fotos) ? r.fotos : []).slice(0, 50).map(f => {
+      if (!f || !sid(f.id)) return null; const w = snum(f.w, 1, 10000), h = snum(f.h, 1, 10000); if (!w || !h) return null;
+      const lines = (Array.isArray(f.lines) ? f.lines : []).slice(0, 100).map(l => {
+        if (!l) return null; const c = ['x1', 'y1', 'x2', 'y2'].map(k => snum(l[k], -1e5, 1e5)); if (c.some(v => v === null)) return null;
+        return {x1: c[0], y1: c[1], x2: c[2], y2: c[3], t: sstr(l.t, 24)};
+      }).filter(Boolean);
+      return {id: f.id, w, h, lines};
+    }).filter(Boolean);
+    return {id: r.id, titel: sstr(r.titel, 120), ort: sstr(r.ort, 120), datum: /^\d{4}-\d{2}-\d{2}$/.test(r.datum) ? r.datum : today(),
+      m, notiz: sstr(r.notiz, 4000), fotos, updated: snum(r.updated, 0, 1e14) || Date.now()};
+  }
+  async function importData(j) {
+    let n = 0, nf = 0;
+    const recs = (Array.isArray(j.aufmass) ? j.aufmass : []).slice(0, 2000).map(cleanRec).filter(Boolean);
+    const need = new Set(recs.flatMap(r => r.fotos.map(f => f.id)));
+    for (const f of (Array.isArray(j.fotos) ? j.fotos : [])) {
+      if (!f || !sid(f.id) || !need.has(f.id) || typeof f.b64 !== 'string' || !/^image\/(jpeg|png)$/.test(f.type)) continue;
+      try { const bin = atob(f.b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+        await put('fotos', {id: f.id, blob: new Blob([u], {type: f.type})}); nf++; } catch (e) {}
+    }
+    for (const r of recs) { await put('aufmass', r); n++; }
+    if (root()) { cur = null; await list(); }
+    return {aufmass: n, fotos: nf};
+  }
+
+  window.Baustelle = {analyze, sketch, exportData, importData};
 })();

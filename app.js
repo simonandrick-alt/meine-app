@@ -104,20 +104,30 @@ $('fre_add').onclick = () => {
   if (n === 'Ich' || D.fre.some(x => x.n.toLowerCase() === n.toLowerCase())) return alert('Diesen Namen gibt es schon.');
   D.fre.push({id: uid(), n, x: val('fre_x')}); store(); $('fre_n').value = ''; $('fre_x').value = ''; renderSpi(); renderFre();
 };
-$('bk_exp').onclick = () => {
-  const blob = new Blob([JSON.stringify({app: 'meine-app', v: 1, daten: D, werte: JSON.parse(localStorage.getItem(KEY) || '{}')}, null, 2)], {type: 'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'meine-app-sicherung-' + today() + '.json'; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+$('bk_exp').onclick = async () => {
+  const btn = $('bk_exp'); btn.disabled = true; const old = btn.textContent; btn.textContent = 'Sicherung wird erstellt …';
+  try {
+    const bs = window.Baustelle ? await window.Baustelle.exportData() : {aufmass: [], fotos: []};
+    const data = {app: 'meine-app', v: 2, erstellt: new Date().toISOString(), daten: D, werte: JSON.parse(localStorage.getItem(KEY) || '{}'), aufmass: bs.aufmass, fotos: bs.fotos};
+    const file = new File([JSON.stringify(data)], 'meine-app-sicherung-' + today() + '.json', {type: 'application/json'});
+    const r = await window.ShareFiles({title: 'Sicherung Meine App', text: 'Sicherung vom ' + dt(today()), files: [file]});
+    toast(r === 'downloaded' ? 'Sicherung gespeichert' : 'Sicherung bereit');
+  } catch (e) { if (!(e && (e.name === 'AbortError' || /cancel/i.test(e.message || '')))) alert('Sicherung konnte nicht erstellt werden.'); }
+  btn.disabled = false; btn.textContent = old;
 };
 $('bk_imp').onclick = () => $('bk_file').click();
 $('bk_file').onchange = async ev => {
   const file = ev.target.files[0]; if (!file) return;
   try {
+    if (file.size > 300e6) throw 0;
     const j = JSON.parse(await file.text());
-    if (file.size > 5e6) throw 0;
     if (!j || j.app !== 'meine-app' || !j.daten) throw 0;
-    if (!confirm('Sicherung laden? Die aktuellen Einträge werden ersetzt.')) return;
-    D = clean(j.daten); store(); renderAll(); alert('Sicherung wiederhergestellt.');
+    const na = Array.isArray(j.aufmass) ? j.aufmass.length : 0;
+    if (!confirm('Sicherung laden?\n\nFreizeit-Einträge werden ersetzt.' + (na ? '\n' + na + ' Aufmaß(e) werden hinzugefügt bzw. aktualisiert.' : ''))) { ev.target.value = ''; return; }
+    D = clean(j.daten); store(); renderAll();
+    let msg = 'Sicherung wiederhergestellt.';
+    if (na && window.Baustelle) { const r = await window.Baustelle.importData(j); msg += '\n' + r.aufmass + ' Aufmaß(e) und ' + r.fotos + ' Foto(s) übernommen.'; }
+    alert(msg);
   } catch (e) { alert('Diese Datei ist keine gültige Sicherung.'); }
   ev.target.value = '';
 };
