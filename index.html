@@ -7,339 +7,352 @@
 <meta name="referrer" content="no-referrer">
 <script src="lock.js"></script>
 <title>Meine App</title>
-<meta name="theme-color" content="#7a4a24">
+<meta name="theme-color" content="#0e1216">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Meine App">
 <style>
+/* ===== Farben: Nachtblau, Anthrazit, Messing ===== */
 :root{
-  --bg:#f4ead9; --card:#fffaf1; --ink:#3b2412; --muted:#7d6550;
-  --wood:#7a4a24; --wood2:#a8693a; --accent:#d9a441; --line:#e2d2b8;
-  --good:#3f7d3a; --warn:#b5541c;
+  --bg:#0e1216; --bg2:#12171c; --card:#161c22; --card2:#1b2229; --ink:#ece6da; --ink2:#cfc7b8; --muted:#8f897e;
+  --brass:#c6a15b; --brass2:#e0c48a; --brass-dk:#9a7838; --line:#262e36; --line2:#323b45;
+  --good:#8fb98a; --warn:#d99a6c; --on-brass:#14110b;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Baskerville,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){
-  :root{ --bg:#1f1610; --card:#2b1f16; --ink:#f3e6d3; --muted:#bba48c;
-    --wood:#5a3418; --wood2:#c98d55; --accent:#e3b456; --line:#45342a;
-    --good:#7cc06f; --warn:#f08a4b; }
+@media (prefers-color-scheme: light){
+  :root{ --bg:#f3eee5; --bg2:#ece6db; --card:#fbf8f2; --card2:#f6f1e8; --ink:#1c2430; --ink2:#36404d; --muted:#7a7366;
+    --brass:#9a7838; --brass2:#8a6a2c; --brass-dk:#b8924e; --line:#e2d9c9; --line2:#d4c9b6;
+    --good:#4d7a48; --warn:#a85d2c; --on-brass:#fbf8f2; color-scheme:light; }
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:17px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  padding-bottom:calc(84px + env(safe-area-inset-bottom))}
-header{background:var(--wood);color:#fff4e2;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;
-  background-image:repeating-linear-gradient(100deg,rgba(255,255,255,.04) 0 6px,rgba(0,0,0,.05) 6px 14px);
-  display:flex;align-items:center;gap:12px}
-header img{width:40px;height:40px;border-radius:10px}
-header h1{margin:0;font-size:22px}
-header p{margin:0;font-size:14px;opacity:.85}
-main{max-width:640px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px;
-  box-shadow:0 2px 6px rgba(60,30,10,.06)}
-h2{margin:0 0 12px;font-size:20px;color:var(--wood2)}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--sans);letter-spacing:.005em;
+  padding-bottom:calc(86px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
+body.nonav{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ===== Kopf ===== */
+header{padding:calc(18px + env(safe-area-inset-top)) 20px 14px;display:flex;align-items:center;gap:14px;
+  background:linear-gradient(180deg,var(--bg2),var(--bg));border-bottom:1px solid var(--line)}
+.mono{width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--brass);box-shadow:inset 0 0 0 3px var(--bg2),inset 0 0 0 4px var(--brass-dk);
+  font:400 22px/1 var(--serif);color:var(--brass)}
+header h1{margin:0;font:400 24px/1.15 var(--serif);letter-spacing:.01em}
+header p{margin:2px 0 0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.hdr-lock{margin-left:auto;background:none;border:1px solid var(--line2);color:var(--brass);border-radius:50%;
+  width:42px;height:42px;display:flex;align-items:center;justify-content:center;padding:0}
+.hdr-lock .ic{width:18px;height:18px}
+
+/* ===== Bereichswahl ===== */
+.switch{display:flex;gap:0;padding:12px 20px;position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.switch button{flex:1;min-height:42px;border:1px solid var(--line2);background:transparent;color:var(--muted);
+  font:500 12px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase}
+.switch button:first-child{border-radius:6px 0 0 6px}.switch button:last-child{border-radius:0 6px 6px 0;border-left:0}
+.switch button.on{background:var(--brass);border-color:var(--brass);color:var(--on-brass)}
+
+main{max-width:680px;margin:0 auto;padding:20px 16px}
+section{display:none}section.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ===== Karten & Text ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px 18px;margin-bottom:16px}
+h2{margin:0 0 14px;font:400 22px/1.2 var(--serif);color:var(--ink);display:flex;align-items:center;gap:10px}
+h2 .ic{color:var(--brass)}
+h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent);margin-left:6px}
+.hint{font-size:14px;color:var(--muted);margin:12px 0 0}
+.hint b{color:var(--ink2);font-weight:600}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 12px}
 .full{grid-column:1/-1}
-label{display:block;font-size:14px;color:var(--muted);margin-bottom:4px;font-weight:600}
-input,select{width:100%;font-size:20px;padding:12px;border-radius:12px;border:2px solid var(--line);
-  background:var(--bg);color:var(--ink);min-height:52px}
-input:focus,select:focus{outline:none;border-color:var(--accent)}
-.res{margin-top:16px;background:var(--wood);color:#fff4e2;border-radius:14px;padding:14px 16px}
-.res .big{font-size:30px;font-weight:800;line-height:1.15}
-.res .row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.15)}
-.res .row:first-of-type{border-top:0}
-.res .row b{font-size:19px}
-.hint{font-size:14px;color:var(--muted);margin-top:10px}
-.ok{color:var(--good);font-weight:700}.bad{color:var(--warn);font-weight:700}
-.res .ok{color:#b9f0a8}.res .bad{color:#ffc29a}
-button.clear{margin-top:12px;width:100%;min-height:48px;border-radius:12px;border:2px solid var(--line);
-  background:transparent;color:var(--muted);font-size:16px;font-weight:600}
-nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
-  display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
-nav button{flex:1;border:0;background:none;color:var(--muted);font-size:12px;font-weight:600;
-  padding:6px 2px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:60px}
-nav button span{font-size:24px;line-height:1}
-nav button.on{background:var(--bg);color:var(--wood2)}
-section{display:none}section.on{display:block}
-nav{display:none}nav.on{display:flex}
-.switch{display:flex;background:var(--card);border-bottom:1px solid var(--line);padding:8px 16px;gap:8px;
-  position:sticky;top:0;z-index:5}
-.switch button{flex:1;min-height:50px;border-radius:14px;border:2px solid var(--line);background:var(--bg);
-  color:var(--muted);font-size:17px;font-weight:700}
-.switch button.on{background:var(--wood);border-color:var(--wood);color:#fff4e2}
-button.add{margin-top:14px;width:100%;min-height:54px;border-radius:14px;border:0;background:var(--accent);
-  color:#3b2412;font-size:18px;font-weight:800}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.stat{background:var(--wood);color:#fff4e2;border-radius:14px;padding:12px}
-.stat b{display:block;font-size:24px;line-height:1.2}
-.stat span{font-size:13px;opacity:.85}
+label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:500}
+input,select{width:100%;font:400 18px/1.2 var(--sans);padding:12px 14px;border-radius:6px;border:1px solid var(--line2);
+  background:var(--bg2);color:var(--ink);min-height:50px;-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--brass) 50%),linear-gradient(135deg,var(--brass) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 22px,calc(100% - 13px) 22px;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+input:focus,select:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px color-mix(in srgb,var(--brass) 22%,transparent)}
+input::placeholder{color:color-mix(in srgb,var(--muted) 70%,transparent)}
+
+/* ===== Ergebnisse ===== */
+.res{margin-top:18px;background:var(--card2);border:1px solid var(--line2);border-left:2px solid var(--brass);border-radius:6px;padding:16px}
+.res .big{font:400 28px/1.2 var(--serif);color:var(--brass2);margin-bottom:8px}
+.res .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:15px;color:var(--ink2)}
+.res .row b{font-weight:600;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.res-err{border-left-color:var(--warn);color:var(--ink2)}
+.ok{color:var(--good);font-weight:600}.bad{color:var(--warn);font-weight:600}
+
+/* ===== Knöpfe ===== */
+button{font-family:var(--sans);cursor:pointer}
+button.add{margin-top:16px;width:100%;min-height:50px;border-radius:6px;border:1px solid var(--brass);background:var(--brass);
+  color:var(--on-brass);font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+button.clear,button.refresh{margin-top:10px;width:100%;min-height:46px;border-radius:6px;border:1px solid var(--line2);
+  background:transparent;color:var(--ink2);font-size:13px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}
+button.refresh{border-color:var(--brass-dk);color:var(--brass)}
+button:active{opacity:.8}
+
+/* ===== Navigation unten ===== */
+nav{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);display:none;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav.on{display:flex}
+nav button{flex:1;border:0;background:none;color:var(--muted);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:56px;position:relative}
+nav button.on{color:var(--brass)}
+nav button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;height:1px;background:var(--brass)}
+
+/* ===== Freizeit ===== */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:16px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stat{background:var(--card);padding:16px}
+.stat b{display:block;font:400 26px/1.15 var(--serif);color:var(--brass2)}
+.stat span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .list{list-style:none;margin:0;padding:0}
 .list li{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
 .list li:first-child{border-top:0}
-.list .t{flex:1;min-width:0}
-.list .t small{display:block;color:var(--muted);font-size:14px}
-.list .del{border:0;background:none;color:var(--muted);font-size:22px;min-width:44px;min-height:44px}
-.empty{color:var(--muted);font-style:italic}
+.list .t{flex:1;min-width:0;color:var(--ink2)}
+.list .t b{color:var(--ink);font-weight:600}
+.list .t small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.list .del{border:0;background:none;color:var(--muted);font-size:24px;min-width:44px;min-height:44px;font-weight:300}
+.empty{color:var(--muted);font-style:italic;font-family:var(--serif)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chips label{display:flex;align-items:center;gap:6px;margin:0;padding:10px 14px;border:2px solid var(--line);
-  border-radius:999px;background:var(--bg);color:var(--ink);font-size:16px}
-.chips input{width:20px;height:20px;min-height:0}
-.bar{display:flex;align-items:center;gap:10px;padding:6px 0}
-.bar .n{width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar .b{flex:1;height:14px;background:var(--line);border-radius:7px;overflow:hidden}
-.bar .b i{display:block;height:100%;background:var(--accent)}
-.bar .c{width:32px;text-align:right;font-weight:700}
-details.rez{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:16px;overflow:hidden}
-details.rez summary{list-style:none;padding:16px;cursor:pointer;display:flex;gap:12px;align-items:center}
+.chips label{display:flex;align-items:center;gap:8px;margin:0;padding:9px 14px;border:1px solid var(--line2);border-radius:999px;
+  background:var(--bg2);color:var(--ink);font-size:14px;letter-spacing:0;text-transform:none}
+.chips input{width:16px;height:16px;min-height:0;accent-color:var(--brass);-webkit-appearance:auto;appearance:auto}
+.bar{display:flex;align-items:center;gap:12px;padding:7px 0}
+.bar .n{width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.bar .b{flex:1;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar .b i{display:block;height:100%;background:linear-gradient(90deg,var(--brass-dk),var(--brass2))}
+.bar .c{width:32px;text-align:right;font-family:var(--serif);font-size:18px;color:var(--brass2)}
+
+/* ===== Küche ===== */
+details.rez{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:12px;overflow:hidden}
+details.rez summary{list-style:none;padding:16px 18px;cursor:pointer;display:flex;gap:16px;align-items:center}
 details.rez summary::-webkit-details-marker{display:none}
-details.rez summary .e{font-size:34px}
-details.rez summary b{display:block;font-size:18px}
-details.rez summary small{color:var(--muted)}
-details.rez .in{padding:0 16px 16px}
-details.rez ol{padding-left:22px;margin:8px 0}details.rez ol li{margin-bottom:6px}
-.tag{display:inline-block;font-size:12px;font-weight:700;background:var(--accent);color:#3b2412;border-radius:6px;padding:1px 6px;margin-left:4px}
-button.pick{width:100%;min-height:50px;border-radius:12px;border:2px solid var(--accent);background:transparent;color:var(--ink);font-size:16px;font-weight:700;margin-top:8px}
-button.pick.on{background:var(--accent);color:#3b2412}
-.shop label{display:flex;gap:10px;align-items:center;margin:0;padding:8px 0;color:var(--ink);font-size:16px;font-weight:400;border-top:1px solid var(--line)}
-.shop input{width:22px;height:22px;min-height:0;flex:none}
+details.rez summary .e{font:400 22px/1 var(--serif);color:var(--brass);width:34px;text-align:center;flex:none}
+details.rez summary b{display:block;font:400 19px/1.25 var(--serif);color:var(--ink)}
+details.rez summary small{color:var(--muted);font-size:13px}
+details.rez[open] summary{border-bottom:1px solid var(--line)}
+details.rez .in{padding:4px 18px 18px}
+details.rez ol{padding-left:22px;margin:12px 0;color:var(--ink2)}details.rez ol li{margin-bottom:8px}
+details.rez ol li::marker{color:var(--brass);font-family:var(--serif)}
+.tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);
+  border:1px solid var(--brass-dk);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:2px}
+button.pick{width:100%;min-height:46px;border-radius:6px;border:1px solid var(--brass-dk);background:transparent;color:var(--brass);
+  font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-top:8px}
+button.pick.on{background:var(--brass);color:var(--on-brass);border-color:var(--brass)}
+.shop label{display:flex;gap:12px;align-items:center;margin:0;padding:10px 0;color:var(--ink);font-size:15px;font-weight:400;
+  letter-spacing:0;text-transform:none;border-top:1px solid var(--line)}
+.shop input{width:18px;height:18px;min-height:0;flex:none;accent-color:var(--brass);-webkit-appearance:auto;appearance:auto}
 .shop label.done span{text-decoration:line-through;color:var(--muted)}
-.shop h3{margin:12px 0 4px;font-size:15px;color:var(--wood2)}
-.ang{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
-.ang small{display:block;color:var(--muted)}
-.ang b{white-space:nowrap}
-#ptr{position:fixed;left:50%;top:0;transform:translate(-50%,-60px);z-index:20;width:46px;height:46px;border-radius:50%;
-  background:var(--card);border:1px solid var(--line);box-shadow:0 3px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;
-  font-size:24px;transition:transform .2s}
-#ptr.spin span{animation:spin .8s linear infinite;display:inline-block}
+.shop h3,.mk{margin:16px 0 4px;font:400 12px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--brass)}
+.ang{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);color:var(--ink2)}
+.ang small{display:block;color:var(--muted);font-size:13px}
+.ang b{white-space:nowrap;font-family:var(--serif);font-weight:400;font-size:18px;color:var(--brass2)}
+
+/* ===== Rechner ===== */
+.r-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.r-h{margin:0;font:400 26px/1.2 var(--serif)}
+.r-h::after{display:none}
+.seg{display:flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;flex:none}
+.seg button{border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:500;min-width:44px;min-height:36px;letter-spacing:.04em}
+.seg button+button{border-left:1px solid var(--line2)}
+.seg button.on{background:var(--brass);color:var(--on-brass)}
+.r-g{margin:22px 0 10px;font:500 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--brass);display:flex;align-items:center;gap:10px}
+.r-g::after{content:"";flex:1;height:1px;background:var(--line)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 14px;color:var(--ink);
+  display:flex;flex-direction:column;gap:4px;min-height:118px}
+.tile .ic{width:26px;height:26px;color:var(--brass);margin-bottom:8px}
+.tile b{font:400 17px/1.2 var(--serif)}
+.tile small{color:var(--muted);font-size:12px;line-height:1.35}
+.tile:active{border-color:var(--brass-dk)}
+.back{border:0;background:none;color:var(--brass);font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:8px 0;min-height:40px}
+.gk{text-transform:none;letter-spacing:0;font-size:13px}
+.r-sol{margin:18px 0 0;font:400 24px/1.2 var(--serif);color:var(--brass2)}
+.card > .hint:first-of-type + .grid{margin-top:16px}
+.pv{display:block;font-size:13px;color:var(--brass);margin-top:4px;font-variant-numeric:tabular-nums}
+.pv:empty{display:none}
+.r-act{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.r-list{padding:10px 0 4px;border-top:1px solid var(--line);font-size:14px}
+.r-list span{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.r-list div{color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.7}
+.opbar{display:flex;gap:6px;margin-top:6px}
+.opbar button{flex:1;min-width:0;padding:0;min-height:38px;border-radius:5px;border:1px solid var(--line2);background:var(--card2);color:var(--brass);font-size:18px}
+svg.sk{display:block;width:100%;height:auto;max-height:240px;margin:8px 0 12px}
+.sk .tri{fill:color-mix(in srgb,var(--brass) 10%,transparent);stroke:var(--brass);stroke-width:1.5}
+.sk .pl{fill:var(--bg2);stroke:var(--line2);stroke-width:1}
+.sk .pt{fill:color-mix(in srgb,var(--brass) 22%,transparent);stroke:var(--brass);stroke-width:.8}
+.sk .pe{fill:transparent;stroke:var(--line2);stroke-dasharray:3 2}
+.sk text{font-family:var(--serif);fill:var(--ink2)}
+.sk .vl{font-size:15px;fill:var(--ink)}.sk .sl{font-size:14px;font-style:italic;fill:var(--brass2)}.sk .al{font-size:12px;fill:var(--muted)}
+
+/* ===== Hinweise, Laden ===== */
+#ptr{position:fixed;left:50%;top:0;transform:translate(-50%,-60px);z-index:20;width:40px;height:40px;border-radius:50%;
+  background:var(--card);border:1px solid var(--brass-dk);display:flex;align-items:center;justify-content:center;transition:transform .2s;color:var(--brass)}
+#ptr .ic{width:20px;height:20px}
+#ptr.spin .ic{animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-button.refresh{margin-top:12px;width:100%;min-height:50px;border-radius:12px;border:2px solid var(--wood2);background:transparent;
-  color:var(--wood2);font-size:16px;font-weight:700}
-#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--wood);color:#fff4e2;
-  padding:10px 18px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:30;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--card2);color:var(--ink);
+  border:1px solid var(--brass-dk);padding:10px 20px;border-radius:6px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:30;white-space:nowrap}
 #toast.on{opacity:1}
+
+/* ===== Sperrbildschirm ===== */
 html.locked body>*:not(#lock){visibility:hidden}
-#lock{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:var(--wood);
-  background-image:repeating-linear-gradient(100deg,rgba(255,255,255,.04) 0 6px,rgba(0,0,0,.05) 6px 14px);color:#fff4e2;
-  padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+#lock{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(120% 80% at 50% 0%,#1b2430,#0b0f13 70%);color:#ece6da;padding:env(safe-area-inset-top) 24px env(safe-area-inset-bottom)}
 #lock.on{display:flex}
-.lk-box{width:100%;max-width:320px;text-align:center}
-.lk-icon{width:64px;height:64px;border-radius:16px;margin-bottom:10px}
-.lk-title{font-size:20px;font-weight:700;margin-bottom:14px}
-.lk-dots{display:flex;gap:14px;justify-content:center;margin-bottom:8px;min-height:18px}
-.lk-dots i{width:16px;height:16px;border-radius:50%;border:2px solid #fff4e2}
-.lk-dots i.on{background:#fff4e2}
-.lk-msg{min-height:22px;color:#ffd49a;font-weight:600;margin-bottom:10px;font-size:15px}
-.lk-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.lk-pad button{min-height:68px;border-radius:18px;border:0;background:rgba(255,255,255,.14);color:#fff4e2;font-size:28px;font-weight:600}
-.lk-pad button:active{background:rgba(255,255,255,.3)}
-.lk-pad .lk-ok{background:var(--accent);color:#3b2412}
-.lk-link{margin-top:14px;background:none;border:0;color:#fff4e2;opacity:.8;font-size:15px;text-decoration:underline;min-height:44px;display:block;width:100%}
-.lk-bio{margin-top:18px;width:100%;min-height:56px;border-radius:16px;border:2px solid #fff4e2;background:rgba(255,255,255,.1);color:#fff4e2;font-size:18px;font-weight:700}
-.hdr-lock{margin-left:auto;background:rgba(255,255,255,.15);border:0;border-radius:12px;font-size:22px;min-width:48px;min-height:48px}
+.lk-box{width:100%;max-width:300px;text-align:center}
+.lk-icon{width:72px;height:72px;border-radius:18px;margin-bottom:18px}
+.lk-title{font:400 22px/1.2 "Iowan Old Style",Palatino,Georgia,serif;margin-bottom:18px;letter-spacing:.01em}
+.lk-dots{display:flex;gap:16px;justify-content:center;margin-bottom:10px;min-height:14px}
+.lk-dots i{width:11px;height:11px;border-radius:50%;border:1px solid #c6a15b}
+.lk-dots i.on{background:#c6a15b}
+.lk-msg{min-height:22px;color:#e0b48a;margin-bottom:14px;font-size:14px}
+.lk-pad{display:grid;grid-template-columns:repeat(3,72px);gap:16px 24px;justify-content:center}
+.lk-pad button{width:72px;height:72px;border-radius:50%;border:1px solid rgba(198,161,91,.45);background:rgba(255,255,255,.03);color:#ece6da;
+  font:300 28px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+.lk-pad button:active{background:rgba(198,161,91,.25)}
+.lk-pad .lk-ok{border-color:#c6a15b;color:#c6a15b;font-size:24px}
+.lk-pad [data-k=back]{border-color:transparent;font-size:22px}
+.lk-bio{margin-top:24px;width:100%;min-height:48px;border-radius:6px;border:1px solid #c6a15b;background:transparent;color:#c6a15b;
+  font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.lk-link{margin-top:10px;background:none;border:0;color:#8f897e;font-size:13px;min-height:40px;display:block;width:100%;letter-spacing:.04em}
 </style>
 </head>
 <body>
-<div id="ptr"><span>🕓</span></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></symbol>
+  <symbol id="i-area" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="1"/><path d="M3.5 13 11 5.5M8 18.5 20.5 6M14 18.5l6.5-6.5"/></symbol>
+  <symbol id="i-ruler" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1"/><path d="M6 8v3M9.5 8v4.5M13 8v3M16.5 8v4.5M20 8v3"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 12h18M10 4v16M15.5 12v8"/></symbol>
+  <symbol id="i-tri" viewBox="0 0 24 24"><path d="M3.5 19.5h17L8 5 3.5 19.5Z"/><path d="M15.5 19.5a4 4 0 0 0-1.6-3.2"/></symbol>
+  <symbol id="i-roof" viewBox="0 0 24 24"><path d="M2.5 13 12 5l9.5 8"/><path d="M5.5 10.5V20h13v-9.5M10 20v-5h4v5"/></symbol>
+  <symbol id="i-miter" viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="M7 7h10v10H7zM3 3l4 4M21 3l-4 4M3 21l4-4M21 21l-4-4"/></symbol>
+  <symbol id="i-dist" viewBox="0 0 24 24"><path d="M2.5 20h19M2.5 4h19M6 4v16M10 4v16M14 4v16M18 4v16"/></symbol>
+  <symbol id="i-stairs" viewBox="0 0 24 24"><path d="M3 20h4v-4h4v-4h4V8h4V4h2"/><path d="M3 20h18"/></symbol>
+  <symbol id="i-brush" viewBox="0 0 24 24"><path d="M14.5 3.5 20.5 9.5 12 18l-6-6 8.5-8.5Z"/><path d="M6 12c-2 0-3.5 1.5-3.5 4 0 2-1 3-1 3s4.5 1 6.5-1c1.4-1.4 1.5-3 1-4"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 2.5h8.5L19 7v14.5H6z"/><path d="M14 2.5V7h5M9 11h7M9 14.5h7M9 18h4"/></symbol>
+  <symbol id="i-cloche" viewBox="0 0 24 24"><path d="M3 17.5h18M4.5 17.5a7.5 7.5 0 0 1 15 0M12 7.5V6M10.5 6h3"/><path d="M2.5 20h19"/></symbol>
+  <symbol id="i-bike" viewBox="0 0 24 24"><circle cx="5.5" cy="16" r="3.5"/><circle cx="18.5" cy="16" r="3.5"/><path d="M5.5 16 9 9h7l2.5 7M9 9l3.5 7H5.5M14.5 6.5H17l-1 2.5M8 6.5h3"/></symbol>
+  <symbol id="i-swim" viewBox="0 0 24 24"><path d="M2 17c2 0 2-1.5 4-1.5S8 17 10 17s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M2 20.5c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><circle cx="16.5" cy="7" r="2"/><path d="m4 13 5-4.5 3.5 2 3 3"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3" y="6" width="11" height="15" rx="1.5" transform="rotate(-10 8.5 13.5)"/><path d="M11.5 4.5 19 5.8a1.5 1.5 0 0 1 1.2 1.7l-2 11.5"/><path d="M8 11.5l1.5 2.5L7 15.5"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5"/><path d="M15.5 4.8a3.5 3.5 0 0 1 0 6.4M17.5 14.8c2.2.6 3.6 2.3 4 5.2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5v2.5"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4.5h-4.5"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M2.5 4h2.5l2.5 11h11l2-8H6.3"/><circle cx="9" cy="19" r="1.3"/><circle cx="17" cy="19" r="1.3"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12.5V4h8.5l9.5 9.5-8.5 8.5L3 12.5Z"/><circle cx="7.5" cy="8.5" r="1.3"/></symbol>
+  <symbol id="i-laurel" viewBox="0 0 24 24"><path d="M12 21c-5-1.5-8-5.5-8-11M12 21c5-1.5 8-5.5 8-11M5 13c1.5.5 2.5 1.5 3 3M4.3 9.5c1.5 0 2.7.7 3.5 2M19 13c-1.5.5-2.5 1.5-3 3M19.7 9.5c-1.5 0-2.7.7-3.5 2"/><path d="m12 4 1.4 2.8 3 .4-2.2 2.1.5 3L12 10.9l-2.7 1.4.5-3-2.2-2.1 3-.4L12 4Z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5 4.5 5.5v6c0 5 3.3 8.5 7.5 10 4.2-1.5 7.5-5 7.5-10v-6L12 2.5Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M4.5 9v10.5h15V9M10 13h4"/></symbol>
+</svg>
+<div id="ptr"><svg class="ic"><use href="#i-refresh"/></svg></div>
 <div id="toast"></div>
 <header>
-  <img src="icon.svg" alt="">
-  <div><h1>Meine App</h1><p id="subtitle">Holz-Rechner für die Werkstatt</p></div>
+  <div class="mono" aria-hidden="true">M</div>
+  <div><h1 id="greet">Meine App</h1><p id="subtitle">Werkstatt</p></div>
 </header>
 <div class="switch">
-  <button data-area="work" class="on">🔨 Arbeit</button>
-  <button data-area="free">🚴 Freizeit</button>
+  <button data-area="work" class="on">Werkstatt</button>
+  <button data-area="free">Freizeit</button>
 </div>
 
 <main>
-<!-- VOLUMEN -->
-<section id="vol" class="work on">
-<div class="card">
-  <h2>Volumen &amp; Gewicht</h2>
-  <div class="grid">
-    <div><label>Länge (mm)</label><input type="number" inputmode="decimal" id="v_l" value="2000"></div>
-    <div><label>Breite (mm)</label><input type="number" inputmode="decimal" id="v_b" value="200"></div>
-    <div><label>Stärke (mm)</label><input type="number" inputmode="decimal" id="v_d" value="27"></div>
-    <div><label>Stück</label><input type="number" inputmode="numeric" id="v_n" value="1"></div>
-    <div><label>Holzart</label><select id="v_h">
-      <option value="470">Fichte / Tanne</option><option value="520">Kiefer</option>
-      <option value="590">Lärche</option><option value="400">Douglasie (trocken)</option>
-      <option value="690">Eiche</option><option value="720">Buche</option>
-      <option value="650">Ahorn</option><option value="640">Nussbaum</option>
-      <option value="560">Kirsche</option><option value="680">Esche</option>
-      <option value="630">MDF</option><option value="650">Multiplex Birke</option>
-    </select></div>
-    <div><label>Preis (€/m³)</label><input type="number" inputmode="decimal" id="v_p" placeholder="z. B. 1800"></div>
-  </div>
-  <div class="res" id="v_out"></div>
-  <button class="clear" data-sec="vol">Zurücksetzen</button>
-</div>
-</section>
-
-<!-- FLÄCHE -->
-<section id="fla" class="work">
-<div class="card">
-  <h2>Fläche (m²)</h2>
-  <div class="grid">
-    <div><label>Länge (mm)</label><input type="number" inputmode="decimal" id="f_l" value="2440"></div>
-    <div><label>Breite (mm)</label><input type="number" inputmode="decimal" id="f_b" value="1220"></div>
-    <div><label>Stück</label><input type="number" inputmode="numeric" id="f_n" value="1"></div>
-    <div><label>Verschnitt (%)</label><input type="number" inputmode="decimal" id="f_v" value="10"></div>
-    <div class="full"><label>Preis (€/m²)</label><input type="number" inputmode="decimal" id="f_p" placeholder="z. B. 35"></div>
-  </div>
-  <div class="res" id="f_out"></div>
-  <button class="clear" data-sec="fla">Zurücksetzen</button>
-</div>
-</section>
-
-<!-- LAUFENDE METER -->
-<section id="lfm" class="work">
-<div class="card">
-  <h2>Laufende Meter</h2>
-  <div class="grid">
-    <div><label>Länge je Stück (mm)</label><input type="number" inputmode="decimal" id="l_l" value="2400"></div>
-    <div><label>Stück</label><input type="number" inputmode="numeric" id="l_n" value="10"></div>
-    <div><label>Verschnitt (%)</label><input type="number" inputmode="decimal" id="l_v" value="10"></div>
-    <div><label>Preis (€/lfm)</label><input type="number" inputmode="decimal" id="l_p" placeholder="z. B. 4,50"></div>
-    <div class="full"><label>Lieferlänge Stangen (mm) – optional</label><input type="number" inputmode="decimal" id="l_s" placeholder="z. B. 5000"></div>
-  </div>
-  <div class="res" id="l_out"></div>
-  <button class="clear" data-sec="lfm">Zurücksetzen</button>
-</div>
-</section>
-
-<!-- PLATTENZUSCHNITT -->
-<section id="pla" class="work">
-<div class="card">
-  <h2>Plattenzuschnitt</h2>
-  <div class="grid">
-    <div><label>Platte Länge (mm)</label><input type="number" inputmode="decimal" id="p_L" value="2800"></div>
-    <div><label>Platte Breite (mm)</label><input type="number" inputmode="decimal" id="p_B" value="2070"></div>
-    <div><label>Teil Länge (mm)</label><input type="number" inputmode="decimal" id="p_l" value="600"></div>
-    <div><label>Teil Breite (mm)</label><input type="number" inputmode="decimal" id="p_b" value="400"></div>
-    <div><label>Benötigte Teile</label><input type="number" inputmode="numeric" id="p_n" value="20"></div>
-    <div><label>Schnittfuge (mm)</label><input type="number" inputmode="decimal" id="p_k" value="4"></div>
-    <div><label>Besäumrand je Seite (mm)</label><input type="number" inputmode="decimal" id="p_r" value="10"></div>
-    <div><label>Teile drehen?</label><select id="p_rot">
-      <option value="1">Ja (ohne Maserung)</option><option value="0">Nein (Maserung beachten)</option>
-    </select></div>
-  </div>
-  <div class="res" id="p_out"></div>
-  <p class="hint">Einfache Rasteraufteilung, also alle Teile gleich ausgerichtet. Ein Zuschnittprogramm schafft oft etwas mehr.</p>
-  <button class="clear" data-sec="pla">Zurücksetzen</button>
-</div>
-</section>
-
-<!-- TREPPE -->
-<section id="tre" class="work">
-<div class="card">
-  <h2>Treppenrechner</h2>
-  <div class="grid">
-    <div><label>Geschosshöhe (mm)</label><input type="number" inputmode="decimal" id="t_h" value="2750"></div>
-    <div><label>Wunsch-Steigung (mm)</label><input type="number" inputmode="decimal" id="t_s" value="180"></div>
-    <div class="full"><label>Schrittmaß (mm)</label><input type="number" inputmode="decimal" id="t_m" value="630"></div>
-  </div>
-  <div class="res" id="t_out"></div>
-  <p class="hint">Schrittmaßregel: 2 × Steigung + Auftritt = 590 bis 650 mm. Prüfe immer die DIN 18065 und die Landesbauordnung.</p>
-  <button class="clear" data-sec="tre">Zurücksetzen</button>
-</div>
-</section>
+<!-- ============ WERKSTATT ============ -->
+<section id="rech" class="work on"></section>
 
 <!-- ============ FREIZEIT ============ -->
 <!-- FAHRRAD -->
 <section id="rad" class="free">
 <div class="stats" id="rad_stats"></div>
 <div class="card">
-  <h2>Neue Tour</h2>
+  <h2><svg class="ic"><use href="#i-bike"/></svg>Neue Tour</h2>
   <div class="grid">
-    <div><label>Datum</label><input type="date" id="rad_d"></div>
-    <div><label>Kilometer</label><input type="number" inputmode="decimal" id="rad_km" placeholder="z. B. 42"></div>
-    <div><label>Dauer (Minuten)</label><input type="number" inputmode="numeric" id="rad_min" placeholder="z. B. 95"></div>
-    <div><label>Höhenmeter</label><input type="number" inputmode="numeric" id="rad_hm" placeholder="optional"></div>
-    <div class="full"><label>Strecke / Notiz</label><input type="text" id="rad_n" placeholder="z. B. Runde zum See"></div>
+    <div><label for="rad_d">Datum</label><input type="date" id="rad_d"></div>
+    <div><label for="rad_km">Kilometer</label><input type="number" inputmode="decimal" id="rad_km" placeholder="42"></div>
+    <div><label for="rad_min">Dauer (Min.)</label><input type="number" inputmode="numeric" id="rad_min" placeholder="95"></div>
+    <div><label for="rad_hm">Höhenmeter</label><input type="number" inputmode="numeric" id="rad_hm" placeholder="optional"></div>
+    <div class="full"><label for="rad_n">Strecke / Notiz</label><input type="text" id="rad_n" placeholder="Runde zum See"></div>
   </div>
-  <button class="add" id="rad_add">+ Tour speichern</button>
+  <button class="add" id="rad_add">Tour eintragen</button>
 </div>
-<div class="card"><h2>Meine Touren</h2><ul class="list" id="rad_list"></ul></div>
+<div class="card"><h2>Touren</h2><ul class="list" id="rad_list"></ul></div>
 </section>
 
 <!-- SCHWIMMEN -->
 <section id="sch" class="free">
 <div class="stats" id="sch_stats"></div>
 <div class="card">
-  <h2>Neues Training</h2>
+  <h2><svg class="ic"><use href="#i-swim"/></svg>Neues Training</h2>
   <div class="grid">
-    <div><label>Datum</label><input type="date" id="sch_d"></div>
-    <div><label>Bahnen</label><input type="number" inputmode="numeric" id="sch_b" placeholder="z. B. 40"></div>
-    <div><label>Bahnlänge</label><select id="sch_l"><option value="25">25 m</option><option value="50">50 m</option><option value="33.33">33⅓ m</option></select></div>
-    <div><label>Dauer (Minuten)</label><input type="number" inputmode="numeric" id="sch_min" placeholder="z. B. 35"></div>
-    <div class="full"><label>Bad / Notiz</label><input type="text" id="sch_n" placeholder="z. B. Hallenbad, Kraul"></div>
+    <div><label for="sch_d">Datum</label><input type="date" id="sch_d"></div>
+    <div><label for="sch_b">Bahnen</label><input type="number" inputmode="numeric" id="sch_b" placeholder="40"></div>
+    <div><label for="sch_l">Bahnlänge</label><select id="sch_l"><option value="25">25 m</option><option value="50">50 m</option><option value="33.33">33⅓ m</option></select></div>
+    <div><label for="sch_min">Dauer (Min.)</label><input type="number" inputmode="numeric" id="sch_min" placeholder="35"></div>
+    <div class="full"><label for="sch_n">Bad / Notiz</label><input type="text" id="sch_n" placeholder="Hallenbad, Kraul"></div>
   </div>
-  <button class="add" id="sch_add">+ Training speichern</button>
+  <button class="add" id="sch_add">Training eintragen</button>
 </div>
-<div class="card"><h2>Meine Trainings</h2><ul class="list" id="sch_list"></ul></div>
+<div class="card"><h2>Trainings</h2><ul class="list" id="sch_list"></ul></div>
 </section>
 
 <!-- SPIELE -->
 <section id="spi" class="free">
 <div class="card">
-  <h2>Neue Partie</h2>
+  <h2><svg class="ic"><use href="#i-cards"/></svg>Neue Partie</h2>
   <div class="grid">
-    <div class="full"><label>Spiel</label><input type="text" id="spi_g" list="spi_games" placeholder="z. B. Catan"><datalist id="spi_games"></datalist></div>
-    <div class="full"><label>Datum</label><input type="date" id="spi_d"></div>
-    <div class="full"><label>Wer hat mitgespielt?</label><div class="chips" id="spi_who"></div></div>
-    <div class="full"><label>Gewinner</label><select id="spi_w"></select></div>
+    <div class="full"><label for="spi_g">Spiel</label><input type="text" id="spi_g" list="spi_games" placeholder="Catan"><datalist id="spi_games"></datalist></div>
+    <div class="full"><label for="spi_d">Datum</label><input type="date" id="spi_d"></div>
+    <div class="full"><label>Am Tisch</label><div class="chips" id="spi_who"></div></div>
+    <div class="full"><label for="spi_w">Sieger</label><select id="spi_w"></select></div>
   </div>
-  <button class="add" id="spi_add">+ Partie speichern</button>
+  <button class="add" id="spi_add">Partie eintragen</button>
 </div>
-<div class="card"><h2>🏆 Siege</h2><div id="spi_wins"></div></div>
-<div class="card"><h2>🎲 Meistgespielt</h2><div id="spi_top"></div></div>
+<div class="card"><h2><svg class="ic"><use href="#i-laurel"/></svg>Siege</h2><div id="spi_wins"></div></div>
+<div class="card"><h2>Meistgespielt</h2><div id="spi_top"></div></div>
 <div class="card"><h2>Letzte Partien</h2><ul class="list" id="spi_list"></ul></div>
 </section>
 
 <!-- FREUNDE -->
 <section id="fre" class="free">
 <div class="card">
-  <h2>Meine Freunde</h2>
+  <h2><svg class="ic"><use href="#i-people"/></svg>Freunde</h2>
   <div class="grid">
-    <div class="full"><label>Name</label><input type="text" id="fre_n" placeholder="z. B. Max"></div>
-    <div class="full"><label>Notiz (Telefon, Geburtstag …)</label><input type="text" id="fre_x" placeholder="optional"></div>
+    <div class="full"><label for="fre_n">Name</label><input type="text" id="fre_n" placeholder="Max"></div>
+    <div class="full"><label for="fre_x">Notiz</label><input type="text" id="fre_x" placeholder="Telefon, Geburtstag …"></div>
   </div>
-  <button class="add" id="fre_add">+ Freund hinzufügen</button>
+  <button class="add" id="fre_add">Hinzufügen</button>
 </div>
 <div class="card"><ul class="list" id="fre_list"></ul></div>
 <div class="card" id="sec_card"></div>
 <div class="card">
-  <h2>Daten sichern</h2>
-  <p class="hint" style="margin-top:0">Deine Einträge sind nur auf diesem Handy gespeichert. Sichere sie ab und zu als Datei.</p>
-  <button class="add" id="bk_exp">⬇ Sicherung herunterladen</button>
-  <button class="clear" id="bk_imp">⬆ Sicherung wiederherstellen</button>
+  <h2><svg class="ic"><use href="#i-archive"/></svg>Sicherung</h2>
+  <p class="hint" style="margin-top:0">Deine Einträge liegen nur auf diesem Gerät. Sichere sie von Zeit zu Zeit als Datei.</p>
+  <button class="add" id="bk_exp">Sicherung herunterladen</button>
+  <button class="clear" id="bk_imp">Sicherung wiederherstellen</button>
   <input type="file" id="bk_file" accept="application/json,.json" hidden>
 </div>
 </section>
+
 <!-- KÜCHE -->
 <section id="kue" class="free">
-<div class="card" id="kue_head"><h2>🍽 Küche der Woche</h2><p class="hint" style="margin:0">Lade Angebote …</p></div>
-<div class="card"><h2>🛒 Einkaufsliste</h2><div id="kue_list"></div></div>
+<div class="card" id="kue_head"><h2><svg class="ic"><use href="#i-cloche"/></svg>Küche der Woche</h2><p class="hint" style="margin:0">Lade Angebote …</p></div>
+<div class="card"><h2><svg class="ic"><use href="#i-cart"/></svg>Einkaufsliste</h2><div id="kue_list"></div></div>
 <div id="kue_rez"></div>
-<div class="card"><h2>🏷 Angebote</h2><div id="kue_ang"></div></div>
+<div class="card"><h2><svg class="ic"><use href="#i-tag"/></svg>Angebote</h2><div id="kue_ang"></div></div>
 </section>
 </main>
 
-<nav id="nav-work" class="on">
-  <button data-go="vol" class="on"><span>🪵</span>Volumen</button>
-  <button data-go="fla"><span>▭</span>Fläche</button>
-  <button data-go="lfm"><span>📏</span>Lfm</button>
-  <button data-go="pla"><span>🪚</span>Platten</button>
-  <button data-go="tre"><span>🪜</span>Treppe</button>
-</nav>
 <nav id="nav-free">
-  <button data-go="kue"><span>🍽</span>Küche</button>
-  <button data-go="rad"><span>🚴</span>Fahrrad</button>
-  <button data-go="sch"><span>🏊</span>Schwimmen</button>
-  <button data-go="spi"><span>🎲</span>Spiele</button>
-  <button data-go="fre"><span>👥</span>Freunde</button>
+  <button data-go="kue"><svg class="ic"><use href="#i-cloche"/></svg>Küche</button>
+  <button data-go="rad"><svg class="ic"><use href="#i-bike"/></svg>Rad</button>
+  <button data-go="sch"><svg class="ic"><use href="#i-swim"/></svg>Schwimmen</button>
+  <button data-go="spi"><svg class="ic"><use href="#i-cards"/></svg>Spiele</button>
+  <button data-go="fre"><svg class="ic"><use href="#i-people"/></svg>Freunde</button>
 </nav>
 
+<script src="rechner.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

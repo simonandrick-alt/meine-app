@@ -1,5 +1,5 @@
-const CACHE = 'meine-app-v5';
-const FILES = ['./', 'index.html', 'app.js', 'lock.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'kueche.json'];
+const CACHE = 'meine-app-v6';
+const FILES = ['./', 'index.html', 'app.js', 'lock.js', 'rechner.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'kueche.json'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
   self.skipWaiting();

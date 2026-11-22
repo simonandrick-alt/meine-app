@@ -141,7 +141,7 @@
     document.getElementById('lk_f').style.display = m === 'unlock' ? '' : 'none';
     const bb = document.getElementById('lk_b');
     bb.style.display = (m === 'unlock' && bioOn()) ? '' : 'none';
-    bb.textContent = (bioName() === 'Face ID' ? '🙂 ' : '👆 ') + 'Mit ' + bioName() + ' entsperren';
+    bb.textContent = 'Mit ' + bioName() + ' entsperren';
     msg(''); draw(); tick();
     if (m === 'unlock' && bioOn()) setTimeout(() => tryBio(true), 350);
   }
@@ -169,7 +169,7 @@
     if (mode === 'set1') { first = entry; mode = 'set2'; entry = ''; msg(''); return draw(); }
     if (mode === 'set2') {
       if (entry !== first) { mode = 'set1'; entry = ''; first = ''; msg('Die PINs stimmen nicht überein. Nochmal.'); return draw(); }
-      busy = true; await savePin(entry); busy = false; close(); toast2('🔒 PIN gespeichert'); renderCard(); return;
+      busy = true; await savePin(entry); busy = false; close(); toast2('PIN gespeichert'); renderCard(); return;
     }
     // Prüfen (unlock / old / remove)
     if (waitLeft()) { entry = ''; draw(); return; }
@@ -177,7 +177,7 @@
     if (!ok) { fail(); entry = ''; draw(); msg(waitLeft() ? '' : 'Falsche PIN'); tick(); navigator.vibrate?.(200); return; }
     wr(FKEY, null);
     if (mode === 'unlock') { unlockOk(); return; }
-    if (mode === 'remove') { wr(PKEY, null); wr(BKEY, null); close(); toast2('🔓 PIN entfernt'); renderCard(); return; }
+    if (mode === 'remove') { wr(PKEY, null); wr(BKEY, null); close(); toast2('PIN entfernt'); renderCard(); return; }
     if (mode === 'old') { mode = 'set1'; entry = ''; first = ''; msg(''); return draw(); }
   }
   function forgot() {
@@ -192,17 +192,17 @@
   function renderCard() {
     const c = document.getElementById('sec_card'); if (!c) return;
     const on = hasPin();
-    c.innerHTML = `<h2>🛡 Sicherheit</h2>
+    c.innerHTML = `<h2><svg class="ic"><use href="#i-shield"/></svg>Sicherheit</h2>
       <p class="hint" style="margin-top:0">${on
-        ? '🔒 PIN-Sperre ist <b>an</b>. Die App sperrt sich beim Öffnen und nach 1 Minute im Hintergrund.'
-        : '🔓 PIN-Sperre ist <b>aus</b>. Jeder, der dein Handy entsperrt in der Hand hat, kann deine Einträge sehen.'}</p>
-      ${on ? `<button class="add" data-sec="lock">🔒 Jetzt sperren</button>
-              ${bioOn() ? `<p class="hint">✓ ${bioName()} ist an.</p><button class="clear" data-sec="biooff">${bioName()} ausschalten</button>`
-                : bioAvailable ? `<button class="add" data-sec="bioon">${bioName() === 'Face ID' ? '🙂' : '👆'} ${bioName()} einschalten</button>`
+        ? 'Die PIN-Sperre ist <b>aktiv</b>. Die App sperrt sich beim Öffnen und nach 1 Minute im Hintergrund.'
+        : 'Die PIN-Sperre ist <b>nicht aktiv</b>. Jeder, der dein Handy entsperrt in der Hand hat, kann deine Einträge sehen.'}</p>
+      ${on ? `<button class="add" data-sec="lock">Jetzt sperren</button>
+              ${bioOn() ? `<p class="hint">${bioName()} ist <b>aktiv</b>.</p><button class="clear" data-sec="biooff">${bioName()} ausschalten</button>`
+                : bioAvailable ? `<button class="add" data-sec="bioon">${bioName()} einschalten</button>`
                 : `<p class="hint">${bioName()} ist in diesem Browser nicht verfügbar. Öffne die App über die Internet-Adresse (https) auf dem Handy.</p>`}
               <button class="clear" data-sec="change">PIN ändern</button>
               <button class="clear" data-sec="remove">PIN entfernen</button>`
-           : `<button class="add" data-sec="set">🔒 PIN-Sperre einrichten</button>`}
+           : `<button class="add" data-sec="set">PIN-Sperre einrichten</button>`}
       <p class="hint">Außerdem aktiv: Die App lädt nur Dateien von ihrer eigenen Adresse und darf keine Daten an fremde Seiten senden. Sie lässt sich nicht in fremde Seiten einbetten, und importierte Sicherungen werden geprüft.</p>`;
     const hb = document.getElementById('hdr_lock'); if (hb) hb.style.display = on ? '' : 'none';
   }
@@ -210,7 +210,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     build();
     const hb = document.createElement('button');
-    hb.id = 'hdr_lock'; hb.className = 'hdr-lock'; hb.setAttribute('aria-label', 'App sperren'); hb.textContent = '🔒';
+    hb.id = 'hdr_lock'; hb.className = 'hdr-lock'; hb.setAttribute('aria-label', 'App sperren'); hb.innerHTML = '<svg class="ic"><use href="#i-lock"/></svg>';
     hb.onclick = lockNow; document.querySelector('header')?.appendChild(hb);
     renderCard();
     bioCheckAvail().then(renderCard);
@@ -218,7 +218,7 @@
       const b = e.target.closest('[data-sec]'); if (!b) return;
       ({lock: lockNow, set: () => show('set1'), change: () => show('old'), remove: () => show('remove'),
         bioon: async () => {
-          try { await bioSetup(); toast2('✓ ' + bioName() + ' eingeschaltet'); }
+          try { await bioSetup(); toast2(bioName() + ' eingeschaltet'); }
           catch (err) { alert(bioName() + ' konnte nicht eingeschaltet werden.' + (err && err.name === 'NotAllowedError' ? ' (abgebrochen)' : '')); }
           renderCard();
         },

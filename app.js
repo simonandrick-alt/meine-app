@@ -4,96 +4,7 @@ const f = (x, d = 2) => x.toLocaleString('de-DE', {minimumFractionDigits: d, max
 const eur = x => x.toLocaleString('de-DE', {style: 'currency', currency: 'EUR'});
 const row = (a, b) => `<div class="row"><span>${a}</span><b>${b}</b></div>`;
 
-function calcVol(){
-  const n = Math.max(1, num('v_n'));
-  const m3 = num('v_l') * num('v_b') * num('v_d') / 1e9 * n;
-  const kg = m3 * num('v_h');
-  const p = num('v_p');
-  $('v_out').innerHTML = `<div class="big">${f(m3, 4)} m³</div>` +
-    row('Gewicht ca.', f(kg, 1) + ' kg') +
-    row('Fläche', f(num('v_l') * num('v_b') / 1e6 * n, 3) + ' m²') +
-    (p ? row('Preis', eur(m3 * p)) : '');
-}
-function calcFla(){
-  const n = Math.max(1, num('f_n'));
-  const m2 = num('f_l') * num('f_b') / 1e6 * n;
-  const mit = m2 * (1 + num('f_v') / 100);
-  const p = num('f_p');
-  $('f_out').innerHTML = `<div class="big">${f(m2, 3)} m²</div>` +
-    row('Mit Verschnitt', f(mit, 3) + ' m²') +
-    (p ? row('Preis (mit Verschnitt)', eur(mit * p)) : '');
-}
-function calcLfm(){
-  const n = Math.max(1, num('l_n')), L = num('l_l');
-  const m = L * n / 1000;
-  const mit = m * (1 + num('l_v') / 100);
-  const p = num('l_p'), s = num('l_s');
-  let st = '';
-  if (s > 0 && L > 0) {
-    if (L > s) st = row('Stangen', '<span class="bad">Teil länger als Stange</span>');
-    else { const per = Math.floor(s / L); st = row('Stück je Stange', per) + row('Stangen nötig', Math.ceil(n / per)); }
-  }
-  $('l_out').innerHTML = `<div class="big">${f(m, 2)} lfm</div>` +
-    row('Mit Verschnitt', f(mit, 2) + ' lfm') + st +
-    (p ? row('Preis (mit Verschnitt)', eur(mit * p)) : '');
-}
-function calcPla(){
-  const r = num('p_r'), k = num('p_k');
-  const L = num('p_L') - 2 * r, B = num('p_B') - 2 * r, l = num('p_l'), b = num('p_b');
-  const need = Math.max(1, num('p_n'));
-  const fit = (pl, pb) => (pl > 0 && pb > 0) ? Math.floor((L + k) / (pl + k)) * Math.floor((B + k) / (pb + k)) : 0;
-  let per = fit(l, b), rot = false;
-  if ($('p_rot').value === '1') { const r2 = fit(b, l); if (r2 > per) { per = r2; rot = true; } }
-  if (per < 1) { $('p_out').innerHTML = '<div class="big">Passt nicht</div><div class="row"><span class="bad">Das Teil ist größer als die nutzbare Platte.</span></div>'; return; }
-  const plates = Math.ceil(need / per);
-  const used = need * l * b, total = plates * num('p_L') * num('p_B');
-  $('p_out').innerHTML = `<div class="big">${plates} Platte${plates > 1 ? 'n' : ''}</div>` +
-    row('Teile je Platte', per + (rot ? ' (gedreht)' : '')) +
-    row('Teile gesamt möglich', plates * per) +
-    row('Ausnutzung', f(used / total * 100, 1) + ' %') +
-    row('Verschnitt', f((total - used) / 1e6, 2) + ' m²');
-}
-function calcTre(){
-  const H = num('t_h'), s0 = num('t_s') || 180, M = num('t_m') || 630;
-  if (H <= 0) { $('t_out').innerHTML = '<div class="big">–</div>'; return; }
-  const n = Math.max(2, Math.round(H / s0));
-  const h = H / n, a = M - 2 * h;
-  const auf = n - 1, lauf = auf * a;
-  const winkel = Math.atan(h / a) * 180 / Math.PI;
-  const sm = 2 * h + a, sich = a + h, beq = a - h;
-  const chk = (ok, txt) => `<span class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'} ${txt}</span>`;
-  $('t_out').innerHTML = `<div class="big">${n} Steigungen à ${f(h, 1)} mm</div>` +
-    row('Auftritte', auf + ' à ' + f(a, 1) + ' mm') +
-    row('Lauflänge', f(lauf / 1000, 3) + ' m') +
-    row('Steigungswinkel', f(winkel, 1) + '°') +
-    row('Schrittmaß 2h+a', chk(sm >= 590 && sm <= 650, f(sm, 0) + ' mm')) +
-    row('Sicherheit a+h ≈ 460', chk(Math.abs(sich - 460) <= 20, f(sich, 0) + ' mm')) +
-    row('Bequemlichkeit a−h ≈ 120', chk(Math.abs(beq - 120) <= 20, f(beq, 0) + ' mm')) +
-    row('Steigung Wohnhaus 140–200', chk(h >= 140 && h <= 200, f(h, 0) + ' mm')) +
-    row('Auftritt Wohnhaus 230–370', chk(a >= 230 && a <= 370, f(a, 0) + ' mm'));
-}
-const calcs = {vol: calcVol, fla: calcFla, lfm: calcLfm, pla: calcPla, tre: calcTre};
-
-// Eingaben merken (nur auf diesem Gerät)
 const KEY = 'meine-app-werte';
-const WF = 'section.work input, section.work select';
-const defaults = {};
-document.querySelectorAll(WF).forEach(el => defaults[el.id] = el.value);
-try {
-  const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
-  for (const id in saved) if ($(id) && $(id).closest('section.work')) $(id).value = saved[id];
-} catch (e) {}
-function save(){
-  const o = {}; document.querySelectorAll(WF).forEach(el => o[el.id] = el.value);
-  try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {}
-}
-document.querySelectorAll('section.work').forEach(sec => {
-  sec.addEventListener('input', () => { calcs[sec.id](); save(); });
-});
-document.querySelectorAll('button.clear[data-sec]').forEach(btn => btn.addEventListener('click', () => {
-  $(btn.dataset.sec).querySelectorAll('input,select').forEach(el => el.value = defaults[el.id]);
-  calcs[btn.dataset.sec](); save();
-}));
 
 // ===== Freizeit-Daten =====
 const DKEY = 'meine-app-daten';
@@ -132,7 +43,7 @@ function renderRad(){
   const best = Math.max(0, ...D.rad.map(e => e.km));
   $('rad_stats').innerHTML = stat(f(km, 0) + ' km', 'gefahren ' + year) + stat(y.length, 'Touren ' + year) +
     stat(min ? f(kmMin / (min / 60), 1) + ' km/h' : '–', 'Ø Tempo') + stat(f(best, 0) + ' km', 'längste Tour');
-  $('rad_list').innerHTML = D.rad.length ? byDate(D.rad).map(e => `<li><div class="t"><b>${f(e.km, 1)} km</b>${e.min ? ' · ' + e.min + ' min · ' + f(e.km / (e.min / 60), 1) + ' km/h' : ''}${e.hm ? ' · ' + e.hm + ' hm' : ''}<small>${dt(e.d)}${e.n ? ' · ' + esc(e.n) : ''}</small></div><button class="del" data-del="rad" data-id="${e.id}">🗑</button></li>`).join('') : '<li class="empty">Noch keine Touren. Viel Spaß beim Fahren!</li>';
+  $('rad_list').innerHTML = D.rad.length ? byDate(D.rad).map(e => `<li><div class="t"><b>${f(e.km, 1)} km</b>${e.min ? ' · ' + e.min + ' min · ' + f(e.km / (e.min / 60), 1) + ' km/h' : ''}${e.hm ? ' · ' + e.hm + ' hm' : ''}<small>${dt(e.d)}${e.n ? ' · ' + esc(e.n) : ''}</small></div><button class="del" aria-label="Löschen" data-del="rad" data-id="${e.id}">×</button></li>`).join('') : '<li class="empty">Noch keine Touren. Viel Spaß beim Fahren!</li>';
 }
 function renderSch(){
   const y = thisYear(D.sch), m = y.reduce((s, e) => s + e.m, 0);
@@ -140,7 +51,7 @@ function renderSch(){
   const pf = p => { const s = Math.round(p * 60); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   $('sch_stats').innerHTML = stat(f(m / 1000, 1) + ' km', 'geschwommen ' + year) + stat(y.length, 'Trainings ' + year) +
     stat(pace ? pf(pace) + ' min' : '–', 'Ø pro 100 m') + stat(f(Math.max(0, ...D.sch.map(e => e.m)), 0) + ' m', 'Bestleistung');
-  $('sch_list').innerHTML = D.sch.length ? byDate(D.sch).map(e => `<li><div class="t"><b>${f(e.m, 0)} m</b> · ${e.b} Bahnen${e.min ? ' · ' + e.min + ' min · ' + pf(e.min / e.m * 100) + '/100 m' : ''}<small>${dt(e.d)}${e.n ? ' · ' + esc(e.n) : ''}</small></div><button class="del" data-del="sch" data-id="${e.id}">🗑</button></li>`).join('') : '<li class="empty">Noch keine Trainings eingetragen.</li>';
+  $('sch_list').innerHTML = D.sch.length ? byDate(D.sch).map(e => `<li><div class="t"><b>${f(e.m, 0)} m</b> · ${e.b} Bahnen${e.min ? ' · ' + e.min + ' min · ' + pf(e.min / e.m * 100) + '/100 m' : ''}<small>${dt(e.d)}${e.n ? ' · ' + esc(e.n) : ''}</small></div><button class="del" aria-label="Löschen" data-del="sch" data-id="${e.id}">×</button></li>`).join('') : '<li class="empty">Noch keine Trainings eingetragen.</li>';
 }
 function bars(obj){
   const arr = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 8);
@@ -161,12 +72,12 @@ function renderSpi(){
   D.spi.forEach(e => { if (e.w) wins[e.w] = (wins[e.w] || 0) + 1; top[e.g] = (top[e.g] || 0) + 1; });
   $('spi_wins').innerHTML = bars(wins);
   $('spi_top').innerHTML = bars(top);
-  $('spi_list').innerHTML = D.spi.length ? byDate(D.spi).slice(0, 30).map(e => `<li><div class="t"><b>${esc(e.g)}</b>${e.w ? ' · 🏆 ' + esc(e.w) : ''}<small>${dt(e.d)} · ${esc((e.who || []).join(', '))}</small></div><button class="del" data-del="spi" data-id="${e.id}">🗑</button></li>`).join('') : '<li class="empty">Noch keine Spieleabende eingetragen.</li>';
+  $('spi_list').innerHTML = D.spi.length ? byDate(D.spi).slice(0, 30).map(e => `<li><div class="t"><b>${esc(e.g)}</b>${e.w ? ' · Sieger: ' + esc(e.w) : ''}<small>${dt(e.d)} · ${esc((e.who || []).join(', '))}</small></div><button class="del" aria-label="Löschen" data-del="spi" data-id="${e.id}">×</button></li>`).join('') : '<li class="empty">Noch keine Spieleabende eingetragen.</li>';
 }
 function renderFre(){
   $('fre_list').innerHTML = D.fre.length ? [...D.fre].sort((a, b) => a.n.localeCompare(b.n)).map(x => {
     const n = D.spi.filter(e => (e.who || []).includes(x.n)).length, w = D.spi.filter(e => e.w === x.n).length;
-    return `<li><div class="t"><b>${esc(x.n)}</b><small>${n} Partien gemeinsam · ${w} Siege${x.x ? ' · ' + esc(x.x) : ''}</small></div><button class="del" data-del="fre" data-id="${x.id}">🗑</button></li>`;
+    return `<li><div class="t"><b>${esc(x.n)}</b><small>${n} Partien gemeinsam · ${w} Siege${x.x ? ' · ' + esc(x.x) : ''}</small></div><button class="del" aria-label="Löschen" data-del="fre" data-id="${x.id}">×</button></li>`;
   }).join('') : '<li class="empty">Noch keine Freunde eingetragen.</li>';
 }
 function renderAll(){ renderRad(); renderSch(); renderSpi(); renderFre(); }
@@ -206,7 +117,7 @@ $('bk_file').onchange = async ev => {
     if (file.size > 5e6) throw 0;
     if (!j || j.app !== 'meine-app' || !j.daten) throw 0;
     if (!confirm('Sicherung laden? Die aktuellen Einträge werden ersetzt.')) return;
-    D = clean(j.daten); store(); renderAll(); alert('Sicherung wiederhergestellt ✓');
+    D = clean(j.daten); store(); renderAll(); alert('Sicherung wiederhergestellt.');
   } catch (e) { alert('Diese Datei ist keine gültige Sicherung.'); }
   ev.target.value = '';
 };
@@ -217,15 +128,16 @@ const KKEY = 'meine-app-kueche';
 let KS = {pick: [], done: []};
 try { Object.assign(KS, JSON.parse(localStorage.getItem(KKEY) || '{}')); } catch (e) {}
 const kstore = () => { try { localStorage.setItem(KKEY, JSON.stringify(KS)); } catch (e) {} };
+const ROM = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 function renderKue(){
   if (!K) return;
   if (KS.woche !== K.woche) { KS = {woche: K.woche, pick: [], done: []}; kstore(); }
-  $('kue_head').innerHTML = `<h2>🍽 Küche der Woche</h2><b>${esc(K.woche)}</b>${K.ort ? ' · ' + esc(K.ort) : ''}<p class="hint">${esc(K.hinweis || '')}</p><p class="hint">Stand: ${dt(K.stand)}</p><button class="refresh" data-refresh="1">↻ Aktualisieren</button>`;
-  $('kue_rez').innerHTML = K.rezepte.map((r, i) => `<details class="rez"><summary><span class="e">${r.emoji || '🍲'}</span><span><b>${esc(r.titel)}</b><small>${r.portionen} Portionen · ${esc(r.zeit)} · ca. ${eur(r.kosten)}</small></span></summary><div class="in">
+  $('kue_head').innerHTML = `<h2><svg class="ic"><use href="#i-cloche"/></svg>Küche der Woche</h2><b>${esc(K.woche)}</b>${K.ort ? ' · ' + esc(K.ort) : ''}<p class="hint">${esc(K.hinweis || '')}</p><p class="hint">Stand: ${dt(K.stand)}</p><button class="refresh" data-refresh="1">Aktualisieren</button>`;
+  $('kue_rez').innerHTML = K.rezepte.map((r, i) => `<details class="rez"><summary><span class="e">${ROM[i] || i + 1}</span><span><b>${esc(r.titel)}</b><small>${r.portionen} Portionen · ${esc(r.zeit)} · ca. ${eur(r.kosten)}</small></span></summary><div class="in">
     <ul class="list">${r.zutaten.map(z => `<li><div class="t">${esc(z.name)}${z.angebot ? `<span class="tag">${esc(z.markt)}</span>` : ''}<small>${esc(z.menge)}</small></div></li>`).join('')}</ul>
     <ol>${r.schritte.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
-    ${r.rest ? `<p class="hint">🥡 ${esc(r.rest)}</p>` : ''}
-    <button class="pick ${KS.pick.includes(i) ? 'on' : ''}" data-pick="${i}">${KS.pick.includes(i) ? '✓ Auf der Einkaufsliste' : '+ Auf die Einkaufsliste'}</button></div></details>`).join('');
+    ${r.rest ? `<p class="hint"><b>Für die Folgetage:</b> ${esc(r.rest)}</p>` : ''}
+    <button class="pick ${KS.pick.includes(i) ? 'on' : ''}" data-pick="${i}">${KS.pick.includes(i) ? 'Auf der Einkaufsliste ✓' : 'Auf die Einkaufsliste'}</button></div></details>`).join('');
   const groups = {};
   KS.pick.forEach(i => (K.rezepte[i]?.zutaten || []).forEach(z => { const m = z.markt || 'Vorrat / beliebig'; ((groups[m] ||= {})[z.name] ||= []).push(z.menge); }));
   for (const m in groups) groups[m] = Object.entries(groups[m]).map(([n, q]) => n + ' – ' + q.join(' + '));
@@ -233,13 +145,13 @@ function renderKue(){
   $('kue_list').innerHTML = ms.length ? '<div class="shop">' + ms.map(m => `<h3>${esc(m)}</h3>` + groups[m].map(t => { const k = m + '|' + t; return `<label class="${KS.done.includes(k) ? 'done' : ''}"><input type="checkbox" ${KS.done.includes(k) ? 'checked' : ''} data-done="${encodeURIComponent(k)}"><span>${esc(t)}</span></label>`; }).join('')).join('') + '</div>' : '<p class="empty">Wähle unten Rezepte aus, dann entsteht hier deine Einkaufsliste.</p>';
   const am = {};
   K.angebote.forEach(a => (am[a.markt] ||= []).push(a));
-  $('kue_ang').innerHTML = Object.keys(am).map(m => `<h3 style="margin:12px 0 4px;color:var(--wood2)">${esc(m)}</h3>` + am[m].map(a => `<div class="ang"><span>${esc(a.produkt)}<small>${esc(a.menge || '')}${a.info ? ' · ' + esc(a.info) : ''}</small></span><b>${a.preis != null ? eur(a.preis) : '–'}</b></div>`).join('')).join('');
+  $('kue_ang').innerHTML = Object.keys(am).map(m => `<h3 class="mk">${esc(m)}</h3>` + am[m].map(a => `<div class="ang"><span>${esc(a.produkt)}<small>${esc(a.menge || '')}${a.info ? ' · ' + esc(a.info) : ''}</small></span><b>${a.preis != null ? eur(a.preis) : '–'}</b></div>`).join('')).join('');
 }
 function togglePick(i){ KS.pick = KS.pick.includes(i) ? KS.pick.filter(x => x !== i) : [...KS.pick, i]; kstore(); renderKue(); }
 function toggleDone(el, k){ k = decodeURIComponent(k); KS.done = el.checked ? [...KS.done, k] : KS.done.filter(x => x !== k); kstore(); el.parentElement.classList.toggle('done', el.checked); }
 function loadKue(){
   return fetch('kueche.json?t=' + Date.now(), {cache: 'no-store'}).then(r => { if (!r.ok) throw 0; return r.json(); }).then(j => { K = j; renderKue(); return true; })
-    .catch(() => { if (!K) $('kue_head').innerHTML = '<h2>🍽 Küche der Woche</h2><p class="empty">Angebote konnten nicht geladen werden. Bist du online?</p><button class="refresh" data-refresh="1">↻ Nochmal versuchen</button>'; return false; });
+    .catch(() => { if (!K) $('kue_head').innerHTML = '<h2><svg class="ic"><use href="#i-cloche"/></svg>Küche der Woche</h2><p class="empty">Angebote konnten nicht geladen werden. Bist du online?</p><button class="refresh" data-refresh="1">Nochmal versuchen</button>'; return false; });
 }
 loadKue();
 function toast(t){ const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
@@ -253,7 +165,7 @@ async function refresh(){
   try { const reg = await navigator.serviceWorker?.getRegistration(); await reg?.update(); } catch (e) {}
   await new Promise(r => setTimeout(r, Math.max(0, 700 - (Date.now() - t0))));
   ptr.classList.remove('spin'); ptr.style.transform = ''; busy = false;
-  toast(!ok ? '⚠ Keine Verbindung' : (old && old !== K.stand + K.woche ? '✓ Neue Angebote geladen' : '✓ Alles aktuell'));
+  toast(!ok ? 'Keine Verbindung' : (old && old !== K.stand + K.woche ? 'Neue Angebote geladen' : 'Alles aktuell'));
 }
 // Herunterziehen zum Aktualisieren
 let y0 = null, pull = 0;
@@ -271,11 +183,13 @@ addEventListener('touchend', () => {
 });
 
 // ===== Navigation =====
-const SUB = {work: 'Holz-Rechner für die Werkstatt', free: 'Küche · Fahrrad · Schwimmen · Spiele'};
-const last = {work: 'vol', free: 'kue'};
+const SUB = {work: 'Werkstatt', free: 'Freizeit'};
+const last = {work: 'rech', free: 'kue'};
 let area = 'work';
+function greet(){ const h = new Date().getHours(); $('greet').textContent = h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 17 ? 'Guten Tag' : h < 22 ? 'Guten Abend' : 'Gute Nacht'; }
 function go(id){
-  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === id));
+  if (!$(id)) id = area === 'work' ? 'rech' : 'kue';
+  document.querySelectorAll('main > section').forEach(s => s.classList.toggle('on', s.id === id));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.go === id));
   last[area] = id;
   try { localStorage.setItem(KEY + '-nav', JSON.stringify({area, last})); } catch (e) {}
@@ -284,16 +198,16 @@ function go(id){
 function setArea(a){
   area = a;
   document.querySelectorAll('.switch button').forEach(b => b.classList.toggle('on', b.dataset.area === a));
-  $('nav-work').classList.toggle('on', a === 'work');
   $('nav-free').classList.toggle('on', a === 'free');
+  document.body.classList.toggle('nonav', a === 'work');
   $('subtitle').textContent = SUB[a];
   go(last[a]);
 }
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
 document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => setArea(b.dataset.area)));
-try { const n = JSON.parse(localStorage.getItem(KEY + '-nav') || 'null'); if (n) { Object.assign(last, n.last); area = n.area === 'free' ? 'free' : 'work'; } } catch (e) {}
+try { const n = JSON.parse(localStorage.getItem(KEY + '-nav') || 'null'); if (n) { if (n.last && n.last.free) last.free = n.last.free; area = n.area === 'free' ? 'free' : 'work'; } } catch (e) {}
+greet(); setInterval(greet, 600000);
 
-Object.values(calcs).forEach(c => c());
 renderAll();
 setArea(area);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
